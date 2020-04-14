@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+
 /** Struktura przechowująca stan gry.
  */
 typedef struct gamma gamma_t;
@@ -117,5 +118,6 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player);
  * planszy lub NULL, jeśli nie udało się zaalokować pamięci.
  */
 char* gamma_board(gamma_t *g);
+
 
 #endif /* GAMMA_H */

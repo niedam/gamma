@@ -13,17 +13,17 @@
 
 
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr - sprawdzany wskaźnik
+ * @param[in] ptr           – sprawdzany wskaźnik
  */
 #define ISNULL(ptr) (ptr == NULL)
 
 
 /** @brief Inicjacja pola.
- * @param[out] fields - pole do zainicjowania
- * @param[in] x - numer kolumny pola
- * @param[in] y - numer wiersza pola
- * @param[in] max_x - liczba kolumn na planszy
- * @param[in] max_y - liczba wierszy na planszy
+ * @param[out] fields       – wskaźnik na pole do zainicjowania,
+ * @param[in] x             – numer kolumny pola,
+ * @param[in] y             – numer wiersza pola,
+ * @param[in] max_x         – liczba kolumn na planszy,
+ * @param[in] max_y         – liczba wierszy na planszy
  */
 static void field_init(field_t **fields, uint32_t x, uint32_t y,
                        uint32_t max_x, uint32_t max_y) {
@@ -107,8 +107,8 @@ uint32_t field_count_adjoining_areas_after_breaking(field_t *field) {
     queue_init(&queue);
     queue_init(&reset);
     for (size_t i = 0; i < field->size_adjoining; ++i) {
-        if (field->adjoining[i]->owner != player ||
-            field->adjoining[i]->visited) {
+        if (field->adjoining[i]->owner != player
+                || field->adjoining[i]->visited) {
             continue;
         }
         field->adjoining[i]->visited = true;
@@ -125,7 +125,6 @@ uint32_t field_count_adjoining_areas_after_breaking(field_t *field) {
                 queue_put_back(&queue, &curr->adjoining[j]->bfs);
             }
         }
-
         result++;
     }
     while (!queue_empty(&reset)) {

@@ -1,10 +1,12 @@
 
 #include "queue.h"
 
+
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr - sprawdzany wskaźnik
+ * @param[in] ptr       – sprawdzany wskaźnik
  */
 #define ISNULL(ptr) (ptr == NULL)
+
 
 void queue_init(queue_t *queue) {
     if (ISNULL(queue)) {
@@ -58,6 +60,7 @@ void queue_put_back(queue_t *q, queue_node_t *node) {
     }
     q->end = node;
 }
+
 
 void *queue_delete_node(queue_node_t *node) {
     if (ISNULL(node) || ISNULL(node->queue)) {

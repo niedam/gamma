@@ -2,7 +2,6 @@
  * Implementacja struktury i metod klasy przechowującej stan gry Gamma.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @copyright Uniwersytet Warszawski
  * @date 17.04.2020
  */
 
@@ -44,22 +43,23 @@ struct gamma {
 
 
 /** @brief Sprawdzenie poprawności identyfikatora gracza.
- * @param[in] g         – wskaźnik na strukturę przechowującą stan gry,
- * @param[in] player    – identyfikator gracza
+ * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
+ * @param[in] player        – identyfikator gracza
  * @return Wartość @p true, jeżeli @param player jest liczbą dodatnią niewiększą
- * od liczby graczy w grze reprezentowanej przez @param g,
- * @p false - w przeciwnym wypadku lub gdy @param g jest `NULL`-em.
+ * od liczby graczy w grze reprezentowanej przez @p g, w przeciwnym wypadku
+ * @p false lub gdy @p g jest `NULL`-em.
  */
 static bool test_player(const gamma_t *g, uint32_t player) {
     return !ISNULL(g) && player > 0 && player <= g->no_players;
 }
 
+
 /** @brief Sprawdzenie poprawności współrzędnych pola planszy.
- * @param[in] g         – wskaźnik na strukturę przechowującą stan gry,
- * @param[in] x         – numer kolumny,
- * @param[in] y         – numer wiersza
- * @return @p true - jeżeli współrzędne odpowiadają poprawnemu polu planszy,
- *         @p false - w przeciwnym wypadku, lub gdy @param g jest `NULL`-em.
+ * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
+ * @param[in] x             – numer kolumny,
+ * @param[in] y             – numer wiersza
+ * @return Wartość @p true jeżeli współrzędne odpowiadają poprawnemu polu planszy,
+ * @p false - w przeciwnym wypadku, lub gdy @p g jest `NULL`-em.
  */
 static bool test_field(const gamma_t *g, uint32_t x, uint32_t y) {
     return !ISNULL(g) && x < g->width && y < g->height;
@@ -67,9 +67,9 @@ static bool test_field(const gamma_t *g, uint32_t x, uint32_t y) {
 
 
 /** @brief Dostęp do pola planszy.
- * @param[in] g         – wskaźnik na strukturę przechowującą stan gry,
- * @param[in] x         – numer kolumny,
- * @param[in] y         – numer wiersza
+ * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
+ * @param[in] x             – numer kolumny,
+ * @param[in] y             – numer wiersza
  * @return Wskaźnik do struktury przechowującej informacje dotyczące pola
  * o współrzędnych (@p x, @p y). Jeżeli któryś z argumentów jest
  * niepoprawny wynikiem funkcji jest `NULL`.
@@ -79,11 +79,27 @@ static field_t *gamma_get_field(const gamma_t *g, uint32_t x, uint32_t y) {
     ? &g->fields[y][x] : NULL;
 }
 
+
+/** @brief Wskaźnik do informacji o graczu.
+ * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
+ * @param player            – identyfikator gracza
+ * @return Wskaźnik do struktury opisującej gracza o podanym
+ * identyfikatorze lub `NULL` jeżeli któryś z parametrów jest nieprawidłowy.
+ */
 static player_t *gamma_get_player(const gamma_t *g, uint32_t player) {
     return test_player(g, player) ? &g->players[player - 1] : NULL;
 }
 
 
+/** @brief Zajęcie pola przez gracza.
+ * W wyniku działania funkcji wskazane pole zostaje zajęte przez gracza o
+ * podanym identyfikatorze.
+ * @param[in, out] g        – wskaźnik na strukturę przechowującą stan gry,
+ * @param[in, out] player   – wskaźnik do informacji związanych z graczem
+ *                            zajmującym pole
+ * @param[in, out] field    – wskaźnik do informacji związanych z zajmowanym
+ *                            polem
+ */
 static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
     if (ISNULL(g) || ISNULL(player) || ISNULL(field) || field->owner != 0) {
         return;
@@ -121,6 +137,12 @@ static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
 }
 
 
+/** @brief Zwolnienie pola zajętego przez gracza.
+ * W wyniku funkcji zajęte przez pewnego gracza pole staje się wolne.
+ * @param[in, out] g        – wskaźnik na strukturę przechowującą stan gry,
+ * @param[in, out] field    – wskaźnik do informacji związanych ze zwalnianym
+ *                            polem
+ */
 static void gamma_release_field(gamma_t *g, field_t *field) {
     if (ISNULL(g) || ISNULL(field)) {
         return;
@@ -167,10 +189,14 @@ gamma_t* gamma_new(uint32_t width, uint32_t height,
     if (width == 0 || height == 0 || players == 0 || areas == 0) {
         return NULL;
     }
+    /** W ramach alokacji struktury wykonywane są następujące czynności:
+     */
     gamma_t *g = malloc(sizeof(struct gamma));
     if (ISNULL(g)) {
         return NULL;
     }
+    /** 1. Alokacja i inicjacja informacji o graczach.
+     */
     g->players = calloc(sizeof(player_t), players);
     for (size_t i = 0; i < players; ++i) {
         g->players[i].id = i + 1;
@@ -179,13 +205,8 @@ gamma_t* gamma_new(uint32_t width, uint32_t height,
         g->players[i].free_adjoining = 0;
         g->players[i].golden_move_done = false;
     }
-    g->areas_limit = areas;
-    /**Inicjacja informacji o graczach.
-     */
     g->no_players = players;
-
-    g->ocupied_fields = 0;
-    /** Inicjacja pól na planszy.
+    /** 2. Alokacja i inicjacja pól na planszy.
      */
     g->width = width;
     g->height = height;
@@ -193,6 +214,10 @@ gamma_t* gamma_new(uint32_t width, uint32_t height,
     if (ISNULL(g->fields)) {
         free(g);
     }
+    /** 3. Zainicjowanie przechowywanych wartości pomocniczych.
+     */
+    g->areas_limit = areas;
+    g->ocupied_fields = 0;
     return g;
 }
 

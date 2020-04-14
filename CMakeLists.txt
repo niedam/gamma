@@ -10,9 +10,6 @@ endif ()
 # Nie chcemy oglądać komunikatów o procentowym postępie kompilacji.
 set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
 
-# Chcemy zobaczyć polecenia wywołane przez make.
-set(CMAKE_VERBOSE_MAKEFILE OFF)
-
 set(CMAKE_C_COMPILER_VERSION 11)
 
 # Ustawiamy wspólne opcje kompilowania dla wszystkich wariantów projektu.
@@ -36,7 +33,7 @@ set(SOURCE_FILES
         src/stringology.h
         )
 
-# Wskazujemy plik zawierający funkcje main.
+# Wskazujemy plik zawierający funkcję main.
 set(TEST_FILE src/gamma_test.c)
 
 # Wskazujemy plik wykonywalny.
@@ -55,5 +52,3 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
     )
 endif (DOXYGEN_FOUND)
-
-add_subdirectory(src/test)
