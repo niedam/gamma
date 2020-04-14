@@ -1,13 +1,18 @@
 #include "uset.h"
 
+/** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
+ * @param[in] ptr - sprawdzany wskaźnik
+ */
 #define ISNULL(ptr) (ptr == NULL)
+
 
 void uset_init(uset_t *uset) {
     if (uset != NULL) {
-        *uset = (uset_t){.size = 1, .next = uset, .previous = uset,
-                .repr = uset, .field = NULL};
+        *uset = (uset_t){ .size = 1, .next = uset, .previous = uset,
+                .repr = uset };
     }
 }
+
 
 void uset_union(uset_t *uset1, uset_t *uset2) {
     if (ISNULL(uset1) || ISNULL(uset2) || uset1->repr == uset2->repr) {
