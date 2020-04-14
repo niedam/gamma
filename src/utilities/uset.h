@@ -33,7 +33,7 @@ void uset_init(uset_t *uset);
 
 
 /** @brief Zwraca rozmiar zbioru, do którego włączono singleton.
- * @param[in] uset      – wskaźnik na singleton
+ * @param[in] uset      – wskaźnik na singleton.
  * @return Rozmiar zbioru, lub @p 0 gdy argument @p uset jest `NULL`-em.
  */
 static inline uint64_t uset_size(const uset_t *uset) {
@@ -43,7 +43,7 @@ static inline uint64_t uset_size(const uset_t *uset) {
 
 /** @brief Sprawdza czy dwa singletony są podzbioram jednego zbioru.
  * @param[in] uset1     – wskaźnik na pierwszy singleton,
- * @param[in] uset2     – wskaźnik na drugi singleton
+ * @param[in] uset2     – wskaźnik na drugi singleton.
  * @return Wartość @p true jeżeli elementy należą do jednego zbioru, @p false
  * w przeciwnym wypadku lub gdy któryś singleton jest `NULL`-em.
  */
@@ -56,7 +56,7 @@ static inline bool uset_test(const uset_t *uset1, const uset_t *uset2) {
  * Funkcja złącza dwa zbiory, których podzbiorami są singletony podane
  * jako parametry.
  * @param[in, out] uset1 – wskaźnik na pierwszy singleton,
- * @param[in, out] uset2 – wskaźnik na drugi singleton
+ * @param[in, out] uset2 – wskaźnik na drugi singleton.
  */
 void uset_union(uset_t *uset1, uset_t *uset2);
 
@@ -64,7 +64,7 @@ void uset_union(uset_t *uset1, uset_t *uset2);
 /** @brief Rozbicie zbioru na singletony.
  * Funkcja rozbija zbiór do którego należy wskazany singleton na niezależne
  * singletony.
- * @param[in, out] uset  – wskaźnik na singleton
+ * @param[in, out] uset  – wskaźnik na singleton.
  */
 void uset_split(uset_t *uset);
 

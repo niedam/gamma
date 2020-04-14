@@ -2,7 +2,6 @@
  * Implementacja struktury pola na planszy gry Gamma.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @copyright Uniwersytet Warszawski
  * @date 17.04.2020
  */
 
@@ -13,7 +12,7 @@
 
 
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr           – sprawdzany wskaźnik
+ * @param[in] ptr           – sprawdzany wskaźnik.
  */
 #define ISNULL(ptr) (ptr == NULL)
 

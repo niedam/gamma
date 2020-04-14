@@ -10,7 +10,7 @@
 
 
 /** @brief Długość zapisu dziesiętnego liczby.
- * @param[in] number        – liczba
+ * @param[in] number        – liczba.
  * @return Długość zapisu dziesiętnego podanej liczby.
  */
 size_t uint32_length(uint32_t number);
@@ -18,10 +18,10 @@ size_t uint32_length(uint32_t number);
 
 /** @brief Wypisanie gracza do bufora tekstowego.
  * Funkcja wypisuje identyfikator gracza do bufora.
- * @param[out] buff          – wskaźnik na bufor tekstowy
- * @param[in] n              – długość bufora
+ * @param[out] buff          – wskaźnik na bufor tekstowy,
+ * @param[in] n              – długość bufora,
  * @param[in] player         – identyfikator gracza lub @p 0 jeżeli pole jest
- *                             wolne
+ *                             wolne.
  * @return Ilość znakóœ wpisanych do bufora.
  */
 int player_print(char *buff, int n, uint32_t player);

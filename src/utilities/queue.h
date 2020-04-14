@@ -41,7 +41,7 @@ void queue_init(queue_t *queue);
 
 /** @brief Inicjuje element kolejki.
  * @param[out] node     – wskaźnik inicjowany element,
- * @param[in] link      – wskaźnik na inicjowany element
+ * @param[in] link      – wskaźnik na inicjowany element.
  */
 void queue_init_node(queue_node_t *node, void *link);
 
@@ -49,7 +49,7 @@ void queue_init_node(queue_node_t *node, void *link);
 /** @brief Dodanie elementu na początek kolejki.
  * @param[in, out] q    – wskaźnik do kolejki,
  * @param[in] node      – wskaźnik na element dodawany do kolejki, wcześniej
- *                        zainicjalizowany
+ *                        zainicjalizowany.
  */
 void queue_put_front(queue_t *q, queue_node_t *node);
 
@@ -57,14 +57,14 @@ void queue_put_front(queue_t *q, queue_node_t *node);
 /** @brief Dodaje element na koniec kolejki.
  * @param[in, out] q    – wskaźnik do kolejki,
  * @param[in] node      – wskaźnik na element dodawany do kolejki, wcześniej
- *                        zainicjalizowany
+ *                        zainicjalizowany.
  */
 void queue_put_back(queue_t *q, queue_node_t *node);
 
 
 /** @brief Usunięcie elementu z kolejki.
  * Funkcja usuwa element z kolejki do której należy.
- * @param[in, out] node – wskaźnik na element należący do pewnej kolejki
+ * @param[in, out] node – wskaźnik na element należący do pewnej kolejki.
  * @return Wskaźnik przechowywany w elemencie kolejki @ref queue_node::link, lub
  * @p NULL jeżeli kolejka jest pusta.
  */
@@ -73,7 +73,7 @@ void *queue_delete_node(queue_node_t *node);
 
 /** @brief Usunięcie początkowego elementu kolejki.
  * Funkcja usuwa z kolejki pierwszy element i zwraca związany z nim wskaźnik.
- * @param[in, out] q    – wskaźnik do kolejki
+ * @param[in, out] q    – wskaźnik do kolejki.
  * @return Wskaźnik przechowywany w elemencie kolejki @ref queue_node::link, lub
  * @p NULL jeżeli kolejka jest pusta.
  */
@@ -83,7 +83,7 @@ static inline void *queue_pop_front(queue_t *q) {
 
 
 /** @brief Test pustości kolejki.
- * @param[in] queue     – wskaźnik do kolejki
+ * @param[in] queue     – wskaźnik do kolejki.
  * @return Wartość @p true jeżeli w kolejce nie ma elementów, @p false
  * w przeciwnym wypadku.
  */

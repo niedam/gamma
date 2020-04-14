@@ -12,7 +12,7 @@
 
 
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr - sprawdzany wskaźnik
+ * @param[in] ptr           – sprawdzany wskaźnik.
  */
 #define ISNULL(ptr) (ptr == NULL)
 
@@ -44,7 +44,7 @@ struct gamma {
 
 /** @brief Sprawdzenie poprawności identyfikatora gracza.
  * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
- * @param[in] player        – identyfikator gracza
+ * @param[in] player        – identyfikator gracza.
  * @return Wartość @p true, jeżeli @param player jest liczbą dodatnią niewiększą
  * od liczby graczy w grze reprezentowanej przez @p g, w przeciwnym wypadku
  * @p false lub gdy @p g jest `NULL`-em.
@@ -57,7 +57,7 @@ static bool test_player(const gamma_t *g, uint32_t player) {
 /** @brief Sprawdzenie poprawności współrzędnych pola planszy.
  * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] x             – numer kolumny,
- * @param[in] y             – numer wiersza
+ * @param[in] y             – numer wiersza.
  * @return Wartość @p true jeżeli współrzędne odpowiadają poprawnemu polu planszy,
  * @p false - w przeciwnym wypadku, lub gdy @p g jest `NULL`-em.
  */
@@ -69,7 +69,7 @@ static bool test_field(const gamma_t *g, uint32_t x, uint32_t y) {
 /** @brief Dostęp do pola planszy.
  * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] x             – numer kolumny,
- * @param[in] y             – numer wiersza
+ * @param[in] y             – numer wiersza.
  * @return Wskaźnik do struktury przechowującej informacje dotyczące pola
  * o współrzędnych (@p x, @p y). Jeżeli któryś z argumentów jest
  * niepoprawny wynikiem funkcji jest `NULL`.
@@ -82,7 +82,7 @@ static field_t *gamma_get_field(const gamma_t *g, uint32_t x, uint32_t y) {
 
 /** @brief Wskaźnik do informacji o graczu.
  * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
- * @param player            – identyfikator gracza
+ * @param player            – identyfikator gracza.
  * @return Wskaźnik do struktury opisującej gracza o podanym
  * identyfikatorze lub `NULL` jeżeli któryś z parametrów jest nieprawidłowy.
  */
@@ -96,9 +96,9 @@ static player_t *gamma_get_player(const gamma_t *g, uint32_t player) {
  * podanym identyfikatorze.
  * @param[in, out] g        – wskaźnik na strukturę przechowującą stan gry,
  * @param[in, out] player   – wskaźnik do informacji związanych z graczem
- *                            zajmującym pole
+ *                            zajmującym pole,
  * @param[in, out] field    – wskaźnik do informacji związanych z zajmowanym
- *                            polem
+ *                            polem.
  */
 static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
     if (ISNULL(g) || ISNULL(player) || ISNULL(field) || field->owner != 0) {
@@ -141,7 +141,7 @@ static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
  * W wyniku funkcji zajęte przez pewnego gracza pole staje się wolne.
  * @param[in, out] g        – wskaźnik na strukturę przechowującą stan gry,
  * @param[in, out] field    – wskaźnik do informacji związanych ze zwalnianym
- *                            polem
+ *                            polem.
  */
 static void gamma_release_field(gamma_t *g, field_t *field) {
     if (ISNULL(g) || ISNULL(field)) {

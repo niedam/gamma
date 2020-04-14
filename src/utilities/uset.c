@@ -1,7 +1,7 @@
 #include "uset.h"
 
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr - sprawdzany wskaźnik
+ * @param[in] ptr - sprawdzany wskaźnik.
  */
 #define ISNULL(ptr) (ptr == NULL)
 
