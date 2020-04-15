@@ -11,23 +11,27 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "utilities/queue.h"
-#include "utilities/uset.h"
 
+typedef struct field field_t;
 
-/** Struktura pola planszy w grze Gamma.
- * Aby korzystać z pola należy go odpowiednio zainicjować.
- * Tablica zainicjowanych pól jest tworzona w funkcji @ref field_board_new()
- * i jest to jedyny zalecany sposób uzyskiwania struktury pól.
- * Korzystanie z niezainicjowanych pól może mieć nieokreślone skutki.
- */
-typedef struct field {
-    struct field *adjoining[4]; /**< Tablica wszystkich sąsiadujących pól. */
-    uint32_t size_adjoining; /**< Ilość sąsiadujących pól. */
-    queue_node_t bfs; /**< Węzeł potrzebny do zorganizowania kolejki do algorytmu BFS. */
-    uset_t area; /**< Obszar do którego należy pole. */
-    uint32_t owner; /**< Identyfikator właściciela pola. */
-    bool visited; /**< Informacja o tym czy odwiedzono pole algorytmem BFS. */
-} field_t;
+struct adjoining {
+    field_t **adjoining;
+    uint32_t size;
+};
+
+uint32_t field_owner(field_t *field);
+
+void field_set_owner(field_t *field, uint32_t new_owner);
+
+struct adjoining field_adjoining(field_t *field);
+
+uint64_t field_area_size(field_t *field);
+
+void field_connect_areas(field_t *field1, field_t *field2);
+
+void field_split_area(field_t *field);
+
+field_t *field_at_array(field_t **array, uint32_t x, uint32_t y);
 
 
 /** @brief Tworzy dwuwymiarową tablicę pól.

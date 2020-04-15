@@ -76,7 +76,7 @@ static bool test_field(const gamma_t *g, uint32_t x, uint32_t y) {
  */
 static field_t *gamma_get_field(const gamma_t *g, uint32_t x, uint32_t y) {
     return test_field(g, x, y)
-    ? &g->fields[y][x] : NULL;
+    ? field_at_array(g->fields, x, y) : NULL;
 }
 
 
@@ -101,23 +101,32 @@ static player_t *gamma_get_player(const gamma_t *g, uint32_t player) {
  *                            polem.
  */
 static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
-    if (ISNULL(g) || ISNULL(player) || ISNULL(field) || field->owner != 0) {
+    if (ISNULL(g) || ISNULL(player) || ISNULL(field) || field_owner(field) != 0) {
         return;
     }
-    field->owner = player->id;
+    /** @internal Jeżeli ktoś wcześniej zajął pole @p field (teoretycznie to może być @p player) to operacja zajęcia
+     * pola się nie powiedzie.
+     */
+    if (field_owner(field) != 0) {
+        return;
+    }
+    field_set_owner(field, player->id);
     g->ocupied_fields++;
     player->occupied_fields++;
     player->areas += 1 - field_count_adjoining_areas(field, player->id);
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
-        if (field->adjoining[i]->owner != 0) {
+    struct adjoining adjoin = field_adjoining(field);
+
+    for (size_t i = 0; i < adjoin.size; ++i) {
+        uint32_t owner = field_owner(adjoin.adjoining[i]);
+        if (owner != 0) {
             size_t diff = 1;
-            for (size_t j = i + 1; j < field->size_adjoining; ++j) {
-                if (field->adjoining[i]->owner == field->adjoining[j]->owner) {
+            for (size_t j = i + 1; j < adjoin.size; ++j) {
+                if (owner == field_owner(adjoin.adjoining[j])) {
                     diff = 0;
                     break;
                 }
             }
-            player_t *current = gamma_get_player(g, field->adjoining[i]->owner);
+            player_t *current = gamma_get_player(g, owner);
             if (ISNULL(current)) {
                 return;
             }
@@ -125,12 +134,13 @@ static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
         }
     }
     uint32_t adjoining;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
-        adjoining = field_count_adjoining_fields(field->adjoining[i], player->id);
-        if (field->adjoining[i]->owner == 0 && adjoining == 1) {
+    for (size_t i = 0; i < adjoin.size; ++i) {
+        uint32_t owner = field_owner(adjoin.adjoining[i]);
+        adjoining = field_count_adjoining_fields(adjoin.adjoining[i], player->id);
+        if (owner == 0 && adjoining == 1) {
             player->free_adjoining++;
-        } else if (field->adjoining[i]->owner == player->id) {
-            uset_union(&field->adjoining[i]->area, &field->area);
+        } else if (owner == player->id) {
+            field_connect_areas(adjoin.adjoining[i], field);
         }
     }
 
@@ -147,24 +157,25 @@ static void gamma_release_field(gamma_t *g, field_t *field) {
     if (ISNULL(g) || ISNULL(field)) {
         return;
     }
-    player_t *owner = gamma_get_player(g, field->owner);
+    player_t *owner = gamma_get_player(g, field_owner(field));
     if (ISNULL(owner)) {
         return;
     }
-    field->owner = 0;
-    uset_split(&field->area);
+    field_set_owner(field, 0);
+    field_split_area(field);
     field_rebuild_areas_around(field, owner->id);
     size_t diff;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
-        if (field->adjoining[i]->owner != 0) {
+    struct adjoining adj = field_adjoining(field);
+    for (size_t i = 0; i < adj.size; ++i) {
+        if (field_owner(adj.adjoining[i]) != 0) {
             diff = 1;
-            for (size_t j = i + 1; j < field->size_adjoining; ++j) {
-                if (field->adjoining[i]->owner == field->adjoining[j]->owner) {
+            for (size_t j = i + 1; j < adj.size; ++j) {
+                if (field_owner(adj.adjoining[i]) == field_owner(adj.adjoining[j])) {
                     diff = 0;
                     break;
                 }
             }
-            player_t *current = gamma_get_player(g, field->adjoining[i]->owner);
+            player_t *current = gamma_get_player(g, field_owner(adj.adjoining[i]));
             if (ISNULL(current)) {
                 return;
             }
@@ -172,9 +183,9 @@ static void gamma_release_field(gamma_t *g, field_t *field) {
         }
     }
     uint32_t adjoining;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
-        adjoining = field_count_adjoining_fields(field->adjoining[i], owner->id);
-        if (field->adjoining[i]->owner == 0 && adjoining == 0) {
+    for (size_t i = 0; i < adj.size; ++i) {
+        adjoining = field_count_adjoining_fields(adj.adjoining[i], owner->id);
+        if (field_owner(adj.adjoining[i]) == 0 && adjoining == 0) {
             owner->free_adjoining--;
         }
     }
@@ -238,7 +249,7 @@ void gamma_delete(gamma_t *g) {
 bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
     field_t *field = gamma_get_field(g, x, y);
     player_t *player_info = gamma_get_player(g, player);
-    if (ISNULL(g) || ISNULL(field) || ISNULL(player_info) || field->owner != 0) {
+    if (ISNULL(g) || ISNULL(field) || ISNULL(player_info) || field_owner(field) != 0) {
         return false;
     }
     uint32_t my_adjoining_areas = field_count_adjoining_areas(field, player);
@@ -261,7 +272,8 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
          */
         return false;
     }
-    if (field->owner == player || field->owner == 0) {
+    uint32_t owner_id = field_owner(field);
+    if (owner_id == player || owner_id == 0) {
         return false;
     }
     if (player_link->areas == g->areas_limit
@@ -271,7 +283,7 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
         return false;
 
     }
-    player_t *owner = gamma_get_player(g, field->owner);
+    player_t *owner = gamma_get_player(g, owner_id);
     size_t areas_after_breaking = field_count_adjoining_areas_after_breaking(field);
     if (g->areas_limit - owner->areas < 4 && g->areas_limit <
                                     areas_after_breaking - 1 + owner->areas) {
@@ -313,14 +325,14 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player) {
 }
 
 
-char* gamma_board(gamma_t *g) {
+char *gamma_board(gamma_t *g) {
     if (ISNULL(g)) {
         return NULL;
     }
     size_t size = 0;
     for (uint32_t i = 0; i < g->height; ++i) {
         for (uint32_t j = 0; j < g->width; ++j) {
-            size_t len = uint32_length(g->fields[i][j].owner);
+            size_t len = uint32_length(field_owner(field_at_array(g->fields, j, i)));
             size += len == 1 ? 1 : len + 2;
         }
         size++;
@@ -333,7 +345,7 @@ char* gamma_board(gamma_t *g) {
     char *buff = result;
     for (uint32_t i = g->height; i > 0; --i) {
         for (uint32_t j = 0; j < g->width; ++j) {
-            int k = player_print(buff, size, g->fields[i - 1][j].owner);
+            int k = player_print(buff, size, field_owner(field_at_array(g->fields, j , i - 1)));
             buff += k;
         }
         buff[0] = '\n';
