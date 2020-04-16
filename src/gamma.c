@@ -100,36 +100,38 @@ static player_t *gamma_get_player(const gamma_t *g, uint32_t player) {
  *                            polem.
  */
 static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
-    if (ISNULL(g) || ISNULL(player) || ISNULL(field) || field->owner != 0) {
+    if (ISNULL(g) || ISNULL(player) || ISNULL(field) || field_owner(field) != 0) {
         return;
     }
-    field->owner = player->id;
+    field_set_owner(field, player->id);
     g->ocupied_fields++;
     player->occupied_fields++;
     player->areas += 1 - field_count_adjoining_areas(field, player->id);
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
-        if (field->adjoining[i]->owner != 0) {
+    field_t *adjoining[4];
+    field_adjoining(field, adjoining);
+    for (uint32_t i = 0; i < field_adjoining_size(field); ++i) {
+        if (field_owner(adjoining[i]) != 0) {
             size_t diff = 1;
-            for (size_t j = i + 1; j < field->size_adjoining; ++j) {
-                if (field->adjoining[i]->owner == field->adjoining[j]->owner) {
+            for (size_t j = i + 1; j < field_adjoining_size(field); ++j) {
+                if (field_owner(adjoining[i]) == field_owner(adjoining[j])) {
                     diff = 0;
                     break;
                 }
             }
-            player_t *current = gamma_get_player(g, field->adjoining[i]->owner);
+            player_t *current = gamma_get_player(g, field_owner(adjoining[i]));
             if (ISNULL(current)) {
                 return;
             }
             current->free_adjoining -= diff;
         }
     }
-    uint32_t adjoining;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
-        adjoining = field_count_adjoining_fields(field->adjoining[i], player->id);
-        if (field->adjoining[i]->owner == 0 && adjoining == 1) {
+    uint32_t count_adj;
+    for (size_t i = 0; i < field_adjoining_size(field); ++i) {
+        count_adj = field_count_adjoining_fields(adjoining[i], player->id);
+        if (field_owner(adjoining[i]) == 0 && count_adj == 1) {
             player->free_adjoining++;
-        } else if (field->adjoining[i]->owner == player->id) {
-            field_connect_area(field->adjoining[i], field);
+        } else if (field_owner(adjoining[i]) == player->id) {
+            field_connect_area(adjoining[i], field);
         }
     }
 
@@ -146,34 +148,36 @@ static void gamma_release_field(gamma_t *g, field_t *field) {
     if (ISNULL(g) || ISNULL(field)) {
         return;
     }
-    player_t *owner = gamma_get_player(g, field->owner);
+    player_t *owner = gamma_get_player(g, field_owner(field));
     if (ISNULL(owner)) {
         return;
     }
-    field->owner = 0;
+    field_set_owner(field, 0);
     field_split_area(field);
     field_rebuild_areas_around(field, owner->id);
     size_t diff;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
-        if (field->adjoining[i]->owner != 0) {
+    field_t *adjoining[4];
+    field_adjoining(field, adjoining);
+    for (size_t i = 0; i < field_adjoining_size(field); ++i) {
+        if (field_owner(adjoining[i]) != 0) {
             diff = 1;
-            for (size_t j = i + 1; j < field->size_adjoining; ++j) {
-                if (field->adjoining[i]->owner == field->adjoining[j]->owner) {
+            for (size_t j = i + 1; j < field_adjoining_size(field); ++j) {
+                if (field_owner(adjoining[i]) == field_owner(adjoining[j])) {
                     diff = 0;
                     break;
                 }
             }
-            player_t *current = gamma_get_player(g, field->adjoining[i]->owner);
+            player_t *current = gamma_get_player(g, field_owner(adjoining[i]));
             if (ISNULL(current)) {
                 return;
             }
             current->free_adjoining += diff;
         }
     }
-    uint32_t adjoining;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
-        adjoining = field_count_adjoining_fields(field->adjoining[i], owner->id);
-        if (field->adjoining[i]->owner == 0 && adjoining == 0) {
+    uint32_t count_adj;
+    for (size_t i = 0; i < field_adjoining_size(field); ++i) {
+        count_adj = field_count_adjoining_fields(adjoining[i], owner->id);
+        if (field_owner(adjoining[i]) == 0 && count_adj == 0) {
             owner->free_adjoining--;
         }
     }
@@ -238,7 +242,7 @@ void gamma_delete(gamma_t *g) {
 bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
     field_t *field = gamma_get_field(g, x, y);
     player_t *player_info = gamma_get_player(g, player);
-    if (ISNULL(g) || ISNULL(field) || ISNULL(player_info) || field->owner != 0) {
+    if (ISNULL(g) || ISNULL(field) || ISNULL(player_info) || field_owner(field) != 0) {
         return false;
     }
     uint32_t my_adjoining_areas = field_count_adjoining_areas(field, player);
@@ -261,7 +265,7 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
          */
         return false;
     }
-    if (field->owner == player || field->owner == 0) {
+    if (field_owner(field) == player || field_owner(field) == 0) {
         return false;
     }
     if (player_link->areas == g->areas_limit
@@ -271,7 +275,7 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
         return false;
 
     }
-    player_t *owner = gamma_get_player(g, field->owner);
+    player_t *owner = gamma_get_player(g, field_owner(field));
     size_t areas_after_breaking = field_count_adjoining_areas_after_breaking(field);
     if (g->areas_limit - owner->areas < 4 && g->areas_limit <
                                     areas_after_breaking - 1 + owner->areas) {
@@ -320,7 +324,7 @@ char* gamma_board(gamma_t *g) {
     size_t size = 0;
     for (uint32_t i = 0; i < g->height; ++i) {
         for (uint32_t j = 0; j < g->width; ++j) {
-            size_t len = uint32_length(g->fields[i][j]->owner);
+            size_t len = uint32_length(field_owner(g->fields[i][j]));
             size += len == 1 ? 1 : len + 2;
         }
         size++;
@@ -333,7 +337,7 @@ char* gamma_board(gamma_t *g) {
     char *buff = result;
     for (uint32_t i = g->height; i > 0; --i) {
         for (uint32_t j = 0; j < g->width; ++j) {
-            int k = player_print(buff, size, g->fields[i - 1][j]->owner);
+            int k = player_print(buff, size, field_owner(g->fields[i - 1][j]));
             buff += k;
         }
         buff[0] = '\n';

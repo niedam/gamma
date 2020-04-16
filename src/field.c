@@ -15,6 +15,21 @@
 #define ISNULL(ptr) (ptr == NULL)
 
 
+typedef struct field {
+    struct field *adjoining[4]; /**< Tablica wszystkich sąsiadujących pól. */
+    uint32_t size_adjoining; /**< Ilość sąsiadujących pól. */
+    field_t *next_node;
+    struct area {
+        struct area *next;
+        struct area *prev;
+        struct area *repr;
+        uint64_t size;
+    } area;
+    uint32_t owner; /**< Identyfikator właściciela pola. */
+    bool visited; /**< Informacja o tym czy odwiedzono pole algorytmem BFS. */
+} field_t;
+
+
 /** @brief Inicjacja pola.
  * @param[out] fields       – wskaźnik na pole do zainicjowania,
  * @param[in] x             – numer kolumny pola,
@@ -46,6 +61,44 @@ static void field_init(field_t ***fields, uint32_t x, uint32_t y,
         }
     }
     f->size_adjoining = last;
+}
+
+
+uint32_t field_owner(field_t *field) {
+    if (ISNULL(field)) {
+        return 0;
+    } else {
+        return field->owner;
+    }
+}
+
+
+void field_set_owner(field_t *field, uint32_t new_owner) {
+    if (ISNULL(field)) {
+        return;
+    }
+    field->owner = new_owner;
+}
+
+
+void field_adjoining(field_t *field, field_t *adjoining[4]) {
+    if (ISNULL(field) || ISNULL(adjoining)) {
+        return;
+    }
+    for (uint32_t i = 0; i < field->size_adjoining; ++i) {
+        adjoining[i] = field->adjoining[i];
+    }
+    for (uint32_t i = field->size_adjoining; i < 4; ++i) {
+        adjoining[i] = NULL;
+    }
+}
+
+
+uint32_t field_adjoining_size(field_t *field) {
+    if (ISNULL(field)) {
+        return 0;
+    }
+    return field->size_adjoining;
 }
 
 

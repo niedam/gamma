@@ -19,19 +19,16 @@ typedef struct field field_t;
  * i jest to jedyny zalecany sposób uzyskiwania struktury pól.
  * Korzystanie z niezainicjowanych pól może mieć nieokreślone skutki.
  */
-typedef struct field {
-    struct field *adjoining[4]; /**< Tablica wszystkich sąsiadujących pól. */
-    uint32_t size_adjoining; /**< Ilość sąsiadujących pól. */
-    field_t *next_node;
-    struct area {
-        struct area *next;
-        struct area *prev;
-        struct area *repr;
-        uint64_t size;
-    } area;
-    uint32_t owner; /**< Identyfikator właściciela pola. */
-    bool visited; /**< Informacja o tym czy odwiedzono pole algorytmem BFS. */
-} field_t;
+
+
+
+uint32_t field_owner(field_t *field);
+
+void field_set_owner(field_t *field, uint32_t);
+
+void field_adjoining(field_t *field, field_t *adjoining[4]);
+
+uint32_t field_adjoining_size(field_t *field);
 
 
 /** @brief Tworzy dwuwymiarową tablicę pól.

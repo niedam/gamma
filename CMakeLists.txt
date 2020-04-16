@@ -30,7 +30,7 @@ set(SOURCE_FILES
         )
 
 # Wskazujemy plik zawierający funkcję main.
-set(TEST_FILE src/173402566.c)
+#set(TEST_FILE src/173402566.c)
 
 # Wskazujemy plik wykonywalny.
 add_executable(gamma ${SOURCE_FILES} ${TEST_FILE})
