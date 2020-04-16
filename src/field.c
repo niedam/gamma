@@ -25,6 +25,7 @@ typedef struct field {
     struct field *adjoining[4]; /**< Tablica wszystkich sąsiadujących pól. */
     uint32_t size_adjoining; /**< Ilość sąsiadujących pól. */
     queue_node_t bfs; /**< Węzeł potrzebny do zorganizowania kolejki do algorytmu BFS. */
+    int i;
     struct area {
         struct area *next;
         struct area *prev;
