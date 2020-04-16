@@ -114,6 +114,9 @@ void field_connect_area(field_t *field1, field_t *field2) {
         return;
     }
     struct area *area1 = &field1->area, *area2 = &field2->area;
+    if (area1->repr == area2->repr) {
+        return;
+    }
     if (area1->repr->size < area2->repr->size) {
         struct area *tmp = area1;
         area1 = area2;

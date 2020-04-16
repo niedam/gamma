@@ -227,6 +227,7 @@ void gamma_delete(gamma_t *g) {
     }
     free(g->players);
     for (size_t i = 0; i < g->height; ++i) {
+        free(g->fields[i][0]);
         free(g->fields[i]);
     }
     free(g->fields);
