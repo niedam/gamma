@@ -43,16 +43,5 @@ void uset_union(uset_t *uset1, uset_t *uset2) {
 
 
 void uset_split(uset_t *uset) {
-    if (uset == NULL || (uset->repr == uset && uset->size == 1)) {
-        return;
-    }
-    uset_t *temp_next, *current = uset;
-    do {
-        temp_next = current->next;
-        current->next = current;
-        current->previous = current;
-        current->repr = current;
-        current->size = 1;
-        current = temp_next;
-    } while (current != uset);
+
 }

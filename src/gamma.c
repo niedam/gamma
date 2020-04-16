@@ -129,7 +129,7 @@ static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
         if (field->adjoining[i]->owner == 0 && adjoining == 1) {
             player->free_adjoining++;
         } else if (field->adjoining[i]->owner == player->id) {
-            uset_union(&field->adjoining[i]->area, &field->area);
+            field_connect_area(field->adjoining[i], field);
         }
     }
 
@@ -151,7 +151,7 @@ static void gamma_release_field(gamma_t *g, field_t *field) {
         return;
     }
     field->owner = 0;
-    uset_split(&field->area);
+    field_split_area(field);
     field_rebuild_areas_around(field, owner->id);
     size_t diff;
     for (size_t i = 0; i < field->size_adjoining; ++i) {

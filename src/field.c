@@ -7,7 +7,6 @@
 
 #include <stdlib.h>
 #include "field.h"
-#include "utilities/uset.h"
 
 
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
@@ -31,7 +30,8 @@ static void field_init(field_t ***fields, uint32_t x, uint32_t y,
     field_t *f = fields[y - 1][x - 1];
     f->visited = false;
     f->owner = 0;
-    uset_init(&f->area);
+    f->area = (struct area){ .prev = &f->area, .next = &f->area,
+                              .repr = &f->area, .size = 1};
     for (size_t i = 0; i < 4; ++i) {
         f->adjoining[i] = NULL;
     }
@@ -97,7 +97,7 @@ uint32_t field_count_adjoining_areas(const field_t *field, uint32_t player_id) {
             int add = 1;
             for (size_t j = i + 1; j < field->size_adjoining; ++j) {
                 if (field->adjoining[j]->owner == player_id &&
-                        uset_test(&field->adjoining[i]->area, &field->adjoining[j]->area)) {
+                        field->adjoining[i]->area.repr == field->adjoining[j]->area.repr) {
                     add = 0;
                     break;
                 }
@@ -106,6 +106,51 @@ uint32_t field_count_adjoining_areas(const field_t *field, uint32_t player_id) {
         }
     }
     return result;
+}
+
+
+void field_connect_area(field_t *field1, field_t *field2) {
+    if (ISNULL(field1) || ISNULL(field2)) {
+        return;
+    }
+    struct area *area1 = &field1->area, *area2 = &field2->area;
+    if (area1->repr->size < area2->repr->size) {
+        struct area *tmp = area1;
+        area1 = area2;
+        area2 = tmp;
+    }
+    area1->repr->size += area2->repr->size;
+    area2->repr->size = 0;
+    struct area *curr = area2;
+    do {
+        curr->repr = area1->repr;
+        curr = curr->next;
+    } while (curr != area2);
+    struct area *next1 = area1->next;
+    struct area *prev2 = area2->prev;
+    area1->next = area2;
+    area2->prev = area1;
+    next1->prev = prev2;
+    prev2->next = next1;
+}
+
+void field_split_area(field_t *field) {
+    if (ISNULL(field)) {
+        return;
+    }
+    struct area *area = &field->area;
+    if (area->repr == area && area->size == 1) {
+        return;
+    }
+    struct area *temp_next, *current = area;
+    do {
+        temp_next = current->next;
+        current->next = current;
+        current->prev = current;
+        current->repr = current;
+        current->size = 1;
+        current = temp_next;
+    } while (current != area);
 }
 
 
@@ -175,7 +220,6 @@ void field_rebuild_areas_around(field_t *field, uint32_t player_id) {
             continue;
         }
         field->adjoining[i]->visited = true;
-
         field->adjoining[i]->next_node = queue;
         queue = field->adjoining[i];
 
@@ -184,7 +228,7 @@ void field_rebuild_areas_around(field_t *field, uint32_t player_id) {
             queue = queue->next_node;
             curr->next_node = reset;
             reset = curr;
-            uset_union(&curr->area, &field->adjoining[i]->area);
+            field_connect_area(curr, field->adjoining[i]);
             for (size_t j = 0; j < curr->size_adjoining; ++j) {
                 if (curr->adjoining[j]->visited ||
                     curr->adjoining[j]->owner != player_id) {

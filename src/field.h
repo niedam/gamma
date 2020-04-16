@@ -10,7 +10,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "utilities/uset.h"
 
 typedef struct field field_t;
 
@@ -29,10 +28,7 @@ typedef struct field {
         struct area *prev;
         struct area *repr;
         uint64_t size;
-    } area2;
-
-
-    uset_t area; /**< Obszar do którego należy pole. */
+    } area;
     uint32_t owner; /**< Identyfikator właściciela pola. */
     bool visited; /**< Informacja o tym czy odwiedzono pole algorytmem BFS. */
 } field_t;
@@ -48,6 +44,10 @@ typedef struct field {
  */
 field_t ***field_board_new(uint32_t width, uint32_t height);
 
+
+void field_connect_area(field_t *field1, field_t *field2);
+
+void field_split_area(field_t *field);
 
 /** @brief Zliczenie sąsiednich obszarów należących do danego gracza.
  * Funkcja zlicza przylegające do danego pola obszary, które są własnością
