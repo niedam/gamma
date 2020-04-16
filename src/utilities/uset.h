@@ -36,7 +36,7 @@ void uset_init(uset_t *uset);
  * @param[in] uset      – wskaźnik na singleton.
  * @return Rozmiar zbioru, lub @p 0 gdy argument @p uset jest `NULL`-em.
  */
-static inline uint64_t uset_size(const uset_t *uset) {
+static inline uint64_t uset_size(uset_t *uset) {
     return uset != NULL ? uset->repr->size : 0;
 }
 
@@ -47,7 +47,7 @@ static inline uint64_t uset_size(const uset_t *uset) {
  * @return Wartość @p true jeżeli elementy należą do jednego zbioru, @p false
  * w przeciwnym wypadku lub gdy któryś singleton jest `NULL`-em.
  */
-static inline bool uset_test(const uset_t *uset1, const uset_t *uset2) {
+static inline bool uset_test(uset_t *uset1, uset_t *uset2) {
     return uset1 != NULL && uset2 != NULL && uset1->repr == uset2->repr;
 }
 

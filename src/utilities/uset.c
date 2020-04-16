@@ -8,8 +8,10 @@
 
 void uset_init(uset_t *uset) {
     if (uset != NULL) {
-        *uset = (uset_t){ .size = 1, .next = uset, .previous = uset,
-                .repr = uset };
+        uset->repr = uset;
+        uset->next = uset;
+        uset->previous = uset;
+        uset->size = 1;
     }
 }
 
@@ -18,10 +20,9 @@ void uset_union(uset_t *uset1, uset_t *uset2) {
     if (ISNULL(uset1) || ISNULL(uset2) || uset1->repr == uset2->repr) {
         return;
     }
-    if (uset_size(uset1) <= uset_size(uset2)) {
-        uset_t *temp = uset1;
-        uset1 = uset2;
-        uset2 = temp;
+   if (uset_size(uset1) < uset_size(uset2)) {
+       uset_union(uset2, uset1);
+       return;
     }
     uset1->repr->size += uset_size(uset2);
     uset2->repr->size = 0;
@@ -32,12 +33,12 @@ void uset_union(uset_t *uset1, uset_t *uset2) {
     } while (curr != uset2);
 
     uset_t *next1 = uset1->next;
-    uset_t *next2 = uset2->next;
+    uset_t *prev2 = uset2->previous;
 
     uset1->next = uset2;
     uset2->previous = uset1;
-    next1->previous = next2;
-    next2->next = next1;
+    next1->previous = prev2;
+    prev2->next = next1;
 }
 
 
