@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include "field.h"
 #include "utilities/uset.h"
-#include "utilities/queue.h"
 
 
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
@@ -33,7 +32,6 @@ static void field_init(field_t ***fields, uint32_t x, uint32_t y,
     f->visited = false;
     f->owner = 0;
     uset_init(&f->area);
-    queue_init_node(&f->bfs, f);
     for (size_t i = 0; i < 4; ++i) {
         f->adjoining[i] = NULL;
     }
@@ -115,34 +113,38 @@ uint32_t field_count_adjoining_areas_after_breaking(field_t *field) {
     uint32_t player = field->owner;
     uint32_t result = 0;
     field->visited = true;
-    queue_t queue;
-    queue_t reset;
-    queue_init(&queue);
-    queue_init(&reset);
+    field_t *queue = NULL;
+    field_t *reset = NULL;
     for (size_t i = 0; i < field->size_adjoining; ++i) {
         if (field->adjoining[i]->owner != player
                 || field->adjoining[i]->visited) {
             continue;
         }
         field->adjoining[i]->visited = true;
-        queue_put_back(&queue, &field->adjoining[i]->bfs);
-        while (!queue_empty(&queue)) {
-            field_t *curr = queue_pop_front(&queue);
-            queue_put_front(&reset, &curr->bfs);
+        field->adjoining[i]->next_node = queue;
+        queue = field->adjoining[i];
+        while (!ISNULL(queue)) {
+            field_t *curr = queue;
+            queue = queue->next_node;
+            curr->next_node = reset;
+            reset = curr;
             for (size_t j = 0; j < curr->size_adjoining; ++j) {
                 if (curr->adjoining[j]->visited ||
                     curr->adjoining[j]->owner != player) {
                     continue;
                 }
                 curr->adjoining[j]->visited = true;
-                queue_put_back(&queue, &curr->adjoining[j]->bfs);
+                curr->adjoining[j]->next_node = queue;
+                queue = curr->adjoining[j];
             }
         }
         result++;
     }
-    while (!queue_empty(&reset)) {
-        field_t *curr = queue_pop_front(&reset);
+    while (!ISNULL(reset)) {
+        field_t *curr = reset;
+        reset = reset->next_node;
         curr->visited = false;
+        curr->next_node = NULL;
     }
     field->visited = false;
     return result;

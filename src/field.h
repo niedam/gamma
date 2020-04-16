@@ -10,7 +10,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "utilities/queue.h"
 #include "utilities/uset.h"
 
 typedef struct field field_t;
@@ -24,8 +23,15 @@ typedef struct field field_t;
 typedef struct field {
     struct field *adjoining[4]; /**< Tablica wszystkich sąsiadujących pól. */
     uint32_t size_adjoining; /**< Ilość sąsiadujących pól. */
-    queue_node_t bfs; /**< Węzeł potrzebny do zorganizowania kolejki do algorytmu BFS. */
     field_t *next_node;
+    struct area {
+        struct area *next;
+        struct area *prev;
+        struct area *repr;
+        uint64_t size;
+    } area2;
+
+
     uset_t area; /**< Obszar do którego należy pole. */
     uint32_t owner; /**< Identyfikator właściciela pola. */
     bool visited; /**< Informacja o tym czy odwiedzono pole algorytmem BFS. */

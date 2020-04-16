@@ -23,8 +23,6 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 set(SOURCE_FILES
         src/gamma.c
         src/gamma.h
-        src/utilities/queue.h
-        src/utilities/queue.c
         src/utilities/uset.c
         src/utilities/uset.h
         src/field.c
