@@ -34,7 +34,7 @@ typedef struct player {
 struct gamma {
     uint32_t height; /**< Wysokość planszy. */
     uint32_t width; /**< Szerokość planszy. */
-    field_t **fields; /**< Dwuwymiarowa tablica pól. */
+    field_t ***fields; /**< Dwuwymiarowa tablica pól. */
     uint32_t no_players; /**< Liczba graczy w rozgrywce. */
     uint32_t areas_limit; /**< Limit obszarów. */
     player_t *players; /**< Tablica graczy. */
@@ -75,8 +75,7 @@ static bool test_field(const gamma_t *g, uint32_t x, uint32_t y) {
  * niepoprawny wynikiem funkcji jest `NULL`.
  */
 static field_t *gamma_get_field(const gamma_t *g, uint32_t x, uint32_t y) {
-    return test_field(g, x, y)
-    ? &g->fields[y][x] : NULL;
+    return test_field(g, x, y) ? g->fields[y][x] : NULL;
 }
 
 
@@ -320,7 +319,7 @@ char* gamma_board(gamma_t *g) {
     size_t size = 0;
     for (uint32_t i = 0; i < g->height; ++i) {
         for (uint32_t j = 0; j < g->width; ++j) {
-            size_t len = uint32_length(g->fields[i][j].owner);
+            size_t len = uint32_length(g->fields[i][j]->owner);
             size += len == 1 ? 1 : len + 2;
         }
         size++;
@@ -333,7 +332,7 @@ char* gamma_board(gamma_t *g) {
     char *buff = result;
     for (uint32_t i = g->height; i > 0; --i) {
         for (uint32_t j = 0; j < g->width; ++j) {
-            int k = player_print(buff, size, g->fields[i - 1][j].owner);
+            int k = player_print(buff, size, g->fields[i - 1][j]->owner);
             buff += k;
         }
         buff[0] = '\n';
