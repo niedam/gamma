@@ -201,6 +201,10 @@ gamma_t* gamma_new(uint32_t width, uint32_t height,
     /** 1. Alokacja i inicjacja informacji o graczach.
      */
     g->players = calloc(sizeof(player_t), players);
+    if (ISNULL(g->players)) {
+        free(g);
+        return NULL;
+    }
     for (size_t i = 0; i < players; ++i) {
         g->players[i].id = i + 1;
         g->players[i].areas = 0;

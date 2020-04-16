@@ -47,6 +47,10 @@ int main() {
   g = gamma_new(10, 10, 2, 3);
   assert(g != NULL);
 
+  gamma_t *g2 = gamma_new(1, 1, 1, UINT32_MAX);
+  assert(g2);
+  gamma_delete(g2);
+
   assert(gamma_move(g, 1, 0, 0));
   gamma_busy_fields(g,1);
   assert(gamma_busy_fields(g, 1) == 1);
@@ -92,7 +96,7 @@ int main() {
   char *p = gamma_board(g);
   assert(p);
   assert(strcmp(p, board) == 0);
-  printf(p);
+  printf("%s", p);
   free(p);
 
   gamma_delete(g);

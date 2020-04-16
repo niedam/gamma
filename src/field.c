@@ -15,16 +15,22 @@
 #define ISNULL(ptr) (ptr == NULL)
 
 
+/** Struktura przechowująca informacje o polu planszy.
+ */
 typedef struct field {
     struct field *adjoining[4]; /**< Tablica wszystkich sąsiadujących pól. */
     uint32_t size_adjoining; /**< Ilość sąsiadujących pól. */
-    field_t *next_node;
+    field_t *next_node; /**< Pomocnicze pole do zorganizowania pól w kolejkę. */
+    /** Struktura reprezentująca obszar pól.
+     * Obszar zaimplementowany jest jako struktura zbiorów rozłącznych w postaci
+     * kolejki cyklicznej.
+     */
     struct area {
-        struct area *next;
-        struct area *prev;
-        struct area *repr;
-        uint64_t size;
-    } area;
+        struct area *next; /**< Następne pole należące do obszaru. */
+        struct area *prev; /**< Poprzednie pole należące do obszaru. */
+        struct area *repr; /**< Wskaźnik na reprezentanta obszaru. */
+        uint64_t size; /**< Rozmiar obszaru (jeżeli pole jest reprezentantem).*/
+    } area; /**< Obszar do którego należy pole. */
     uint32_t owner; /**< Identyfikator właściciela pola. */
     bool visited; /**< Informacja o tym czy odwiedzono pole algorytmem BFS. */
 } field_t;

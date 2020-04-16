@@ -11,23 +11,43 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+/** Struktura przechowująca informacje o pojedyńczym polu w grze.
+ */
 typedef struct field field_t;
 
-/** Struktura pola planszy w grze Gamma.
- * Aby korzystać z pola należy go odpowiednio zainicjować.
- * Tablica zainicjowanych pól jest tworzona w funkcji @ref field_board_new()
- * i jest to jedyny zalecany sposób uzyskiwania struktury pól.
- * Korzystanie z niezainicjowanych pól może mieć nieokreślone skutki.
+
+/** @brief Identyfikator gracza zajmującego pole.
+ * @param[in] field         – wskaźnik na pole.
+ * @return Funkcja zwraca identyfikator gracza, którego pionek zajmuje pole lub
+ * `0` jeżeli pole jest wolne.
  */
-
-
-
 uint32_t field_owner(field_t *field);
 
-void field_set_owner(field_t *field, uint32_t);
 
+/** @brief Ustawienie identyfikatora gracza zajmującego pole.
+ * @param[in, out] field    – wskaźnika na pole,
+ * @param[in] new_owner     – identyfikator gracza lub `0` jeżeli pole ma zostać
+ *                            zwolnione.
+ */
+void field_set_owner(field_t *field, uint32_t new_owner);
+
+
+/** @brief Tablica sąsiedztwa pola.
+ * Funkcja wpisuje do tablicy podanej jako parametr @p adjoining wskaźniki pól
+ * z którymi sąsiaduje pole @p field. Jeżeli @p field ma mniej niż czterech
+ * sąsiadów, reszta tablicy uzupełniana jest wartościami `NULL`.
+ * @param[in] field         – wskaźnik na pole,
+ * @param[out] adjoining    – tablica, do której zostaną zapisani sąsiedzi pola
+ *                            @p field.
+ */
 void field_adjoining(field_t *field, field_t *adjoining[4]);
 
+
+/** @brief Ilość pól sąsiadujących.
+ * @param[in] field         – wskaźnik na pole.
+ * @return Funkcja zwraca liczbę pól z którymi styka się pole @p field.
+ */
 uint32_t field_adjoining_size(field_t *field);
 
 
@@ -42,9 +62,21 @@ uint32_t field_adjoining_size(field_t *field);
 field_t ***field_board_new(uint32_t width, uint32_t height);
 
 
+/** @brief Złączenie dwóch obszarów w jeden.
+ * Funkcja złącza dwa obszary do których należą @p field1 i @p field2.
+ * @param[in, out] field1   – wskaźnik na pierwsze pole,
+ * @param[in, out] field2   – wskaźnik na drugie pole.
+ */
 void field_connect_area(field_t *field1, field_t *field2);
 
+
+/** @brief Rozbicie obszaru na pojedyńcze pola.
+ * W wyniku działania funkcji obszar do którego należy pole @p field zostaje
+ * rozbity na obszary składające się z pojedyńczych pól.
+ * @param[in, out] field    – wskaźnik na pole.
+ */
 void field_split_area(field_t *field);
+
 
 /** @brief Zliczenie sąsiednich obszarów należących do danego gracza.
  * Funkcja zlicza przylegające do danego pola obszary, które są własnością

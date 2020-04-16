@@ -26,7 +26,7 @@ typedef struct gamma gamma_t;
  * @param[in] players – liczba graczy, liczba dodatnia,
  * @param[in] areas   – maksymalna liczba obszarów,
  *                      jakie może zająć jeden gracz, liczba dodatnia.
- * @return Wskaźnik na utworzoną strukturę lub NULL, gdy nie udało się
+ * @return Wskaźnik na utworzoną strukturę lub `NULL`, gdy nie udało się
  * zaalokować pamięci lub któryś z parametrów jest niepoprawny.
  */
 gamma_t* gamma_new(uint32_t width, uint32_t height,
