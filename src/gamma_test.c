@@ -95,9 +95,18 @@ int main() {
     assert(p);
     printf("%s", p);
     assert(strcmp(p, board) == 0);
-
     free(p);
-
     gamma_delete(g);
+
+    gamma_t *g_10 = gamma_new(5, 5, 12, 14);
+    assert(gamma_move(g_10, 11, 0, 0));
+    assert(gamma_move(g_10, 11, 1, 0));
+    assert(gamma_move(g_10, 12, 0, 1));
+    assert(gamma_move(g_10, 5, 4, 4));
+    char *p2 = gamma_board(g_10);
+    printf("%s", p2);
+    free(p2);
+    gamma_delete(g_10);
+
     return 0;
 }

@@ -261,7 +261,6 @@ uint32_t field_count_adjoining_fields(const field_t *field, uint32_t player_id) 
 void field_rebuild_areas_around(field_t *field, uint32_t player_id) {
     field_t *queue = NULL;
     field_t *reset = NULL;
-
     for (uint32_t i = 0; i < field->size_adjoining; ++i) {
         if (field->adjoining[i]->owner != player_id ||
             field->adjoining[i]->visited) {

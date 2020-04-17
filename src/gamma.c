@@ -58,8 +58,8 @@ static bool test_player(const gamma_t *g, uint32_t player) {
  * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] x             – numer kolumny,
  * @param[in] y             – numer wiersza.
- * @return Wartość @p true jeżeli współrzędne odpowiadają poprawnemu polu planszy,
- * @p false - w przeciwnym wypadku, lub gdy @p g jest `NULL`-em.
+ * @return Wartość @p true jeżeli współrzędne odpowiadają poprawnemu polu
+ * planszy, @p false - w przeciwnym wypadku, lub gdy @p g jest `NULL`-em.
  */
 static bool test_field(const gamma_t *g, uint32_t x, uint32_t y) {
     return !ISNULL(g) && x < g->width && y < g->height;
@@ -245,7 +245,8 @@ void gamma_delete(gamma_t *g) {
 bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
     field_t *field = gamma_get_field(g, x, y);
     player_t *player_info = gamma_get_player(g, player);
-    if (ISNULL(g) || ISNULL(field) || ISNULL(player_info) || field_owner(field) != 0) {
+    if (ISNULL(g) || ISNULL(field) || ISNULL(player_info) ||
+            field_owner(field) != 0) {
         return false;
     }
     uint32_t my_adjoining_areas = field_count_adjoining_areas(field, player);
@@ -324,16 +325,12 @@ char* gamma_board(gamma_t *g) {
     if (ISNULL(g)) {
         return NULL;
     }
-    size_t size = 0;
-    for (uint32_t i = 0; i < g->height; ++i) {
-        for (uint32_t j = 0; j < g->width; ++j) {
-            field_t *f = gamma_get_field(g, j, i);
-            size_t len = uint32_length(field_owner(f));
-            size += len == 1 ? 1 : len + 2;
-        }
-        size++;
-    }
-    size++;
+    /** Jeżeli liczba graczy jest większa od 9 to identyfikatory zapisywane
+     * są w blokach o długości ilości cyfr w liczbie graczy.
+     * Przestrzeń niewykorzystywana w ramach bloku wypełniana jest spacjami.
+     */
+    size_t max_len = uint32_length(g->no_players);
+    size_t size = max_len * g->width * g->height + g->height + 1;
     char *result = calloc(sizeof(char), size);
     if (ISNULL(result)) {
         return NULL;
@@ -342,7 +339,7 @@ char* gamma_board(gamma_t *g) {
     for (uint32_t i = g->height; i > 0; --i) {
         for (uint32_t j = 0; j < g->width; ++j) {
             field_t *f = gamma_get_field(g, j, i - 1);
-            int k = player_print(buff, size, field_owner(f));
+            int k = player_write(buff, size, field_owner(f), max_len);
             buff += k;
         }
         buff[0] = '\n';
