@@ -22,7 +22,7 @@ typedef struct field field_t;
  * @return Funkcja zwraca identyfikator gracza, którego pionek zajmuje pole lub
  * `0` jeżeli pole jest wolne.
  */
-uint32_t field_owner(field_t *field);
+uint32_t field_owner(const field_t *field);
 
 
 /** @brief Ustawienie identyfikatora gracza zajmującego pole.
@@ -48,18 +48,26 @@ void field_adjoining(field_t *field, field_t *adjoining[4]);
  * @param[in] field         – wskaźnik na pole.
  * @return Funkcja zwraca liczbę pól z którymi styka się pole @p field.
  */
-uint32_t field_adjoining_size(field_t *field);
+uint32_t field_adjoining_size(const field_t *field);
 
 
-/** @brief Tworzy dwuwymiarową tablicę pól.
+/** @brief Tworzy i inicjuje tablicę pól.
  * Funkcja tworzy i inicjuje dwuwymiarową tablicę pól reprezentującą planszę
- * gry Gamma.
+ * gry Gamma o wielkości `widthd * height`.
  * @param[in] width         – ilość kolumn,
  * @param[in] height        – ilość wierszy.
- * @return Wskaźnik do utworzonej planszy lub `NULL` jeżeli alokacja się
+ * @return Wskaźnik do utworzonej tablicy lub `NULL` jeżeli alokacja się
  * nie powiodła.
  */
-field_t ***field_board_new(uint32_t width, uint32_t height);
+field_t *field_board_new(uint32_t width, uint32_t height);
+
+
+/** @brief Odczytuje pole z tablicy pól.
+ * @param[in] b             – wskaźnik na tablicę pól,
+ * @param[in] field_id      – numer pozycji do odczytania.
+ * @return Wskaźnik na pole na pozycji @p field_id w tablicy @p b.
+ */
+field_t *field_at_board(field_t *b, uint64_t field_id);
 
 
 /** @brief Złączenie dwóch obszarów w jeden.

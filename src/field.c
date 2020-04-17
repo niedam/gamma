@@ -36,19 +36,27 @@ typedef struct field {
 } field_t;
 
 
+field_t *field_at_board(field_t *b, uint64_t field_id) {
+    return !ISNULL(b) ? &b[field_id] : NULL;
+}
+
+
 /** @brief Inicjacja pola.
- * @param[out] fields       – wskaźnik na pole do zainicjowania,
- * @param[in] x             – numer kolumny pola,
- * @param[in] y             – numer wiersza pola,
+ * @param[out] fields       – wskaźnik na tablicę pól do zainicjowania,
+ *                            która ma reprezentować planszę,
+ * @param[in] x             – numer kolumny pola do zainicjowania,
+ *                            liczba nieujemna mniejsza od @p max_x,
+ * @param[in] y             – numer wiersza pola do zainicjowania,
+ *                            liczba nieujemna mniejsza od @p max_y,
  * @param[in] max_x         – liczba kolumn na planszy,
  * @param[in] max_y         – liczba wierszy na planszy
  */
-static void field_init(field_t ***fields, uint32_t x, uint32_t y,
+static void field_init(field_t *fields, uint32_t x, uint32_t y,
                        uint32_t max_x, uint32_t max_y) {
-    if (ISNULL(fields) || x == 0 || y == 0 || x > max_x || y > max_y) {
+    if (ISNULL(fields) || x >= max_x || y >= max_y) {
         return;
     }
-    field_t *f = fields[y - 1][x - 1];
+    field_t *f = &fields[(uint64_t) max_x * y + x];
     f->visited = false;
     f->owner = 0;
     f->area = (struct area){ .prev = &f->area, .next = &f->area,
@@ -60,9 +68,10 @@ static void field_init(field_t ***fields, uint32_t x, uint32_t y,
     int v_x[4] = {0, -1, 0, 1};
     int v_y[4] = {1, 0, -1, 0};
     for (size_t i = 0; i < 4; ++i) {
-        if (x + v_x[i] > 0 && x + v_x[i] <= max_x
-            && y + v_y[i] > 0 && y + v_y[i] <= max_y) {
-            f->adjoining[last] = fields[y + v_y[i] - 1][x + v_x[i] - 1];
+        if (x + v_x[i] + 1 > 0 && x + v_x[i] + 1 <= max_x
+                && y + v_y[i] + 1 > 0 && y + v_y[i] + 1 <= max_y) {
+            f->adjoining[last] =
+                    &fields[(y + v_y[i]) * (uint64_t) max_x + x + v_x[i]];
             ++last;
         }
     }
@@ -70,7 +79,7 @@ static void field_init(field_t ***fields, uint32_t x, uint32_t y,
 }
 
 
-uint32_t field_owner(field_t *field) {
+uint32_t field_owner(const field_t *field) {
     if (ISNULL(field)) {
         return 0;
     } else {
@@ -100,7 +109,7 @@ void field_adjoining(field_t *field, field_t *adjoining[4]) {
 }
 
 
-uint32_t field_adjoining_size(field_t *field) {
+uint32_t field_adjoining_size(const field_t *field) {
     if (ISNULL(field)) {
         return 0;
     }
@@ -108,44 +117,21 @@ uint32_t field_adjoining_size(field_t *field) {
 }
 
 
-field_t ***field_board_new(uint32_t width, uint32_t height) {
+field_t *field_board_new(uint32_t width, uint32_t height) {
     if (width == 0 || height == 0) {
         return NULL;
     }
-    field_t ***array = calloc(sizeof(field_t **), height);
-    if (ISNULL(array)) {
+    size_t n_fields = (size_t) width * height;
+    field_t *result = calloc(n_fields, sizeof(field_t));
+    if (ISNULL(result)) {
         return NULL;
     }
     for (uint32_t i = 0; i < height; ++i) {
-        array[i] = calloc(sizeof(field_t *), width);
-        if (ISNULL(array[i])) {
-            for (uint32_t j = 0; j < i; ++j) {
-                free(array[i][0]);
-                free(array[i]);
-            }
-            free(array);
-            return NULL;
-        }
-        field_t *fields = calloc(sizeof(field_t), width);
-        if (ISNULL(fields)) {
-            free(array[i]);
-            for (uint32_t j = 0; j < i; ++j) {
-                free(array[i][0]);
-                free(array[i]);
-            }
-            free(array);
-            return NULL;
-        }
         for (uint32_t j = 0; j < width; ++j) {
-            array[i][j] = &fields[j];
+            field_init(result, j, i, width, height);
         }
     }
-    for (uint32_t i = 1; i <= height; ++i) {
-        for (uint32_t j = 1; j <= width; ++j) {
-            field_init(array, j, i, width, height);
-        }
-    }
-    return array;
+    return result;
 }
 
 

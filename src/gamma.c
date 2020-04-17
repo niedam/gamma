@@ -34,7 +34,7 @@ typedef struct player {
 struct gamma {
     uint32_t height; /**< Wysokość planszy. */
     uint32_t width; /**< Szerokość planszy. */
-    field_t ***fields; /**< Dwuwymiarowa tablica pól. */
+    field_t *fields; /**< Dwuwymiarowa tablica pól. */
     uint32_t no_players; /**< Liczba graczy w rozgrywce. */
     uint32_t areas_limit; /**< Limit obszarów. */
     player_t *players; /**< Tablica graczy. */
@@ -74,8 +74,9 @@ static bool test_field(const gamma_t *g, uint32_t x, uint32_t y) {
  * o współrzędnych (@p x, @p y). Jeżeli któryś z argumentów jest
  * niepoprawny wynikiem funkcji jest `NULL`.
  */
-static field_t *gamma_get_field(const gamma_t *g, uint32_t x, uint32_t y) {
-    return test_field(g, x, y) ? g->fields[y][x] : NULL;
+static field_t *gamma_get_field(gamma_t *g, uint32_t x, uint32_t y) {
+    return !test_field(g, x, y) ? NULL :
+                    field_at_board(g->fields, (uint64_t) (g->width) * y + x);
 }
 
 
@@ -219,7 +220,9 @@ gamma_t* gamma_new(uint32_t width, uint32_t height,
     g->height = height;
     g->fields = field_board_new(width, height);
     if (ISNULL(g->fields)) {
+        free(g->players);
         free(g);
+        return NULL;
     }
     /** 3. Zainicjowanie przechowywanych wartości pomocniczych.
      */
@@ -234,10 +237,6 @@ void gamma_delete(gamma_t *g) {
         return;
     }
     free(g->players);
-    for (size_t i = 0; i < g->height; ++i) {
-        free(g->fields[i][0]);
-        free(g->fields[i]);
-    }
     free(g->fields);
     free(g);
 }
@@ -328,7 +327,8 @@ char* gamma_board(gamma_t *g) {
     size_t size = 0;
     for (uint32_t i = 0; i < g->height; ++i) {
         for (uint32_t j = 0; j < g->width; ++j) {
-            size_t len = uint32_length(field_owner(g->fields[i][j]));
+            field_t *f = gamma_get_field(g, j, i);
+            size_t len = uint32_length(field_owner(f));
             size += len == 1 ? 1 : len + 2;
         }
         size++;
@@ -341,7 +341,8 @@ char* gamma_board(gamma_t *g) {
     char *buff = result;
     for (uint32_t i = g->height; i > 0; --i) {
         for (uint32_t j = 0; j < g->width; ++j) {
-            int k = player_print(buff, size, field_owner(g->fields[i - 1][j]));
+            field_t *f = gamma_get_field(g, j, i - 1);
+            int k = player_print(buff, size, field_owner(f));
             buff += k;
         }
         buff[0] = '\n';
