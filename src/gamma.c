@@ -112,8 +112,8 @@ static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
     field_adjoining(field, adjoining);
     for (uint32_t i = 0; i < field_adjoining_size(field); ++i) {
         if (field_owner(adjoining[i]) != 0) {
-            size_t diff = 1;
-            for (size_t j = i + 1; j < field_adjoining_size(field); ++j) {
+            uint32_t diff = 1;
+            for (uint32_t j = i + 1; j < field_adjoining_size(field); ++j) {
                 if (field_owner(adjoining[i]) == field_owner(adjoining[j])) {
                     diff = 0;
                     break;
@@ -127,7 +127,7 @@ static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
         }
     }
     uint32_t count_adj;
-    for (size_t i = 0; i < field_adjoining_size(field); ++i) {
+    for (uint32_t i = 0; i < field_adjoining_size(field); ++i) {
         count_adj = field_count_adjoining_fields(adjoining[i], player->id);
         if (field_owner(adjoining[i]) == 0 && count_adj == 1) {
             player->free_adjoining++;
@@ -156,13 +156,13 @@ static void gamma_release_field(gamma_t *g, field_t *field) {
     field_set_owner(field, 0);
     field_split_area(field);
     field_rebuild_areas_around(field, owner->id);
-    size_t diff;
+    uint32_t diff;
     field_t *adjoining[4];
     field_adjoining(field, adjoining);
-    for (size_t i = 0; i < field_adjoining_size(field); ++i) {
+    for (uint32_t i = 0; i < field_adjoining_size(field); ++i) {
         if (field_owner(adjoining[i]) != 0) {
             diff = 1;
-            for (size_t j = i + 1; j < field_adjoining_size(field); ++j) {
+            for (uint32_t j = i + 1; j < field_adjoining_size(field); ++j) {
                 if (field_owner(adjoining[i]) == field_owner(adjoining[j])) {
                     diff = 0;
                     break;
@@ -176,7 +176,7 @@ static void gamma_release_field(gamma_t *g, field_t *field) {
         }
     }
     uint32_t count_adj;
-    for (size_t i = 0; i < field_adjoining_size(field); ++i) {
+    for (uint32_t i = 0; i < field_adjoining_size(field); ++i) {
         count_adj = field_count_adjoining_fields(adjoining[i], owner->id);
         if (field_owner(adjoining[i]) == 0 && count_adj == 0) {
             owner->free_adjoining--;
@@ -206,7 +206,7 @@ gamma_t* gamma_new(uint32_t width, uint32_t height,
         free(g);
         return NULL;
     }
-    for (size_t i = 0; i < players; ++i) {
+    for (uint32_t i = 0; i < players; ++i) {
         g->players[i].id = i + 1;
         g->players[i].areas = 0;
         g->players[i].occupied_fields = 0;
@@ -279,7 +279,7 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
 
     }
     player_t *owner = gamma_get_player(g, field_owner(field));
-    size_t areas_after_breaking = field_count_adjoining_areas_after_breaking(field);
+    uint32_t areas_after_breaking = field_count_adjoining_areas_after_breaking(field);
     if (g->areas_limit - owner->areas < 4 && g->areas_limit <
                                     areas_after_breaking - 1 + owner->areas) {
         /* Zdjęcie pionka innemu graczu stworzyłoby mu obszary ponad limit.

@@ -61,13 +61,13 @@ static void field_init(field_t *fields, uint32_t x, uint32_t y,
     f->owner = 0;
     f->area = (struct area){ .prev = &f->area, .next = &f->area,
                               .repr = &f->area, .size = 1};
-    for (size_t i = 0; i < 4; ++i) {
+    for (uint32_t i = 0; i < 4; ++i) {
         f->adjoining[i] = NULL;
     }
-    size_t last = 0;
+    uint32_t last = 0;
     int v_x[4] = {0, -1, 0, 1};
     int v_y[4] = {1, 0, -1, 0};
-    for (size_t i = 0; i < 4; ++i) {
+    for (uint32_t i = 0; i < 4; ++i) {
         if (x + v_x[i] + 1 > 0 && x + v_x[i] + 1 <= max_x
                 && y + v_y[i] + 1 > 0 && y + v_y[i] + 1 <= max_y) {
             f->adjoining[last] =
@@ -137,10 +137,10 @@ field_t *field_board_new(uint32_t width, uint32_t height) {
 
 uint32_t field_count_adjoining_areas(const field_t *field, uint32_t player_id) {
     uint32_t result = 0;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
+    for (uint32_t i = 0; i < field->size_adjoining; ++i) {
         if (field->adjoining[i]->owner == player_id) {
             int add = 1;
-            for (size_t j = i + 1; j < field->size_adjoining; ++j) {
+            for (uint32_t j = i + 1; j < field->size_adjoining; ++j) {
                 if (field->adjoining[j]->owner == player_id &&
                         field->adjoining[i]->area.repr == field->adjoining[j]->area.repr) {
                     add = 0;
@@ -208,7 +208,7 @@ uint32_t field_count_adjoining_areas_after_breaking(field_t *field) {
     field->visited = true;
     field_t *queue = NULL;
     field_t *reset = NULL;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
+    for (uint32_t i = 0; i < field->size_adjoining; ++i) {
         if (field->adjoining[i]->owner != player
                 || field->adjoining[i]->visited) {
             continue;
@@ -221,7 +221,7 @@ uint32_t field_count_adjoining_areas_after_breaking(field_t *field) {
             queue = queue->next_node;
             curr->next_node = reset;
             reset = curr;
-            for (size_t j = 0; j < curr->size_adjoining; ++j) {
+            for (uint32_t j = 0; j < curr->size_adjoining; ++j) {
                 if (curr->adjoining[j]->visited ||
                     curr->adjoining[j]->owner != player) {
                     continue;
@@ -249,7 +249,7 @@ uint32_t field_count_adjoining_fields(const field_t *field, uint32_t player_id) 
         return 0;
     }
     uint32_t result = 0;
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
+    for (uint32_t i = 0; i < field->size_adjoining; ++i) {
         if (field->adjoining[i]->owner == player_id) {
             result++;
         }
@@ -262,7 +262,7 @@ void field_rebuild_areas_around(field_t *field, uint32_t player_id) {
     field_t *queue = NULL;
     field_t *reset = NULL;
 
-    for (size_t i = 0; i < field->size_adjoining; ++i) {
+    for (uint32_t i = 0; i < field->size_adjoining; ++i) {
         if (field->adjoining[i]->owner != player_id ||
             field->adjoining[i]->visited) {
             continue;
@@ -277,7 +277,7 @@ void field_rebuild_areas_around(field_t *field, uint32_t player_id) {
             curr->next_node = reset;
             reset = curr;
             field_connect_area(curr, field->adjoining[i]);
-            for (size_t j = 0; j < curr->size_adjoining; ++j) {
+            for (uint32_t j = 0; j < curr->size_adjoining; ++j) {
                 if (curr->adjoining[j]->visited ||
                     curr->adjoining[j]->owner != player_id) {
                     continue;

@@ -4,11 +4,11 @@
 #include "stringology.h"
 
 
-size_t uint32_length(uint32_t number)  {
+uint32_t uint32_length(uint32_t number)  {
     if (number == 0) {
         return 1;
     }
-    size_t result = 0;
+    uint32_t result = 0;
     while (number > 0) {
         result++;
         number /= 10;

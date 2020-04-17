@@ -1,6 +1,4 @@
-/** @file
- * Biblioteka funkcji dotyczących tworzenia i obsługi stringów.
- *
+/** @file Biblioteka funkcji dotyczących tworzenia i obsługi stringów.
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
  * @date 17.04.2020
  */
@@ -13,7 +11,7 @@
  * @param[in] number        – liczba.
  * @return Długość zapisu dziesiętnego podanej liczby.
  */
-size_t uint32_length(uint32_t number);
+uint32_t uint32_length(uint32_t number);
 
 
 /** @brief Wypisanie gracza do bufora tekstowego.
