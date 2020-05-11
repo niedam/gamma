@@ -6,14 +6,11 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "gamma.h"
-#include "stringology.h"
 #include "batchmode.h"
 #include "input_interface.h"
 
 #define ISNULL(ptr) (ptr == NULL)
 
-#define WHITE_SPACES " \t\v\f\r\n"
-#define NUMBER_CHAR "0123456789"
 
 
 struct batch_command {
@@ -64,7 +61,7 @@ static void batch_command_run(gamma_t *g, char command, int param_size, const ui
         }
     }
     if (cmd_id >= sizeof(commands) || param_size != commands[cmd_id].param_size) {
-        print_error();
+        report_error();
         return;
     }
     switch (commands[cmd_id].signature) {
@@ -97,9 +94,7 @@ void batch_run(gamma_t *g) {
         resp = parse_line(&cmd, 3, param);
         if (resp == PARSE_END) {
             exit(EXIT_SUCCESS);
-        } else if (resp == PARSE_ERROR) {
-            print_error();
-        } else {
+        } else if (resp != PARSE_ERROR && resp != PARSE_CONTINUE) {
             batch_command_run(g, cmd, resp, param);
         }
     }

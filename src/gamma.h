@@ -21,12 +21,7 @@ typedef struct gamma gamma_t;
 
 /** Parametry funcji @ref gamma_new.
  */
-typedef enum gamma_param {
-    gamma_width = 0,
-    gamma_height = 1,
-    gamma_players = 2,
-    gamma_areas = 3,
-} gamma_param_t;
+
 
 
 /** @brief Tworzy strukturę przechowującą stan gry.

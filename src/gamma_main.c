@@ -23,14 +23,12 @@ int main() {
         if (resp == PARSE_END) {
             exit(EXIT_SUCCESS);
         } else if (resp == 4 && (mode == 'I' || mode == 'B')) {
-            print_ok();
+            report_ok();
             break;
-        } else {
-            print_error();
         }
     }
-    global.game = gamma_new(params[gamma_width], params[gamma_height],
-                            params[gamma_players], params[gamma_areas]);
+    global.game = gamma_new(params[0], params[1],
+                            params[2], params[3]);
     switch (mode) {
         case 'B':
             batch_run(global.game);

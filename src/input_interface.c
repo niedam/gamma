@@ -2,13 +2,11 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/param.h>
-#include <stdbool.h>
+
 #include <stdlib.h>
 #include <errno.h>
 #include "input_interface.h"
 #include "stringology.h"
-#include "gamma.h"
 
 #define ISNULL(ptr) (ptr == NULL)
 
@@ -23,11 +21,11 @@ static struct {
 } global = { .buffer_size = 0, .line_length = 0, .count_read_lines = 0, .buffer = NULL };
 
 
-void print_error() {
+void report_error() {
     fprintf(stderr, "ERROR %d\n", global.count_read_lines);
 }
 
-void print_ok() {
+void report_ok() {
     printf("OK %d\n", global.count_read_lines);
 }
 
@@ -59,20 +57,20 @@ int parse_line(char *cmd, int params_size, uint32_t params[params_size]) {
     if (global.line_length == -1 && errno == ENOMEM) {
         exit(EXIT_FAILURE);
     } else if (global.line_length < 0) {
-        return -2;
+        return PARSE_END;
     }
     if (!check_valid_line(global.buffer)) {
         // Linia niezakończona `\n`.
-        print_error();
+        report_error();
         return PARSE_ERROR;
     }
     if (check_blank_line(global.buffer) || check_comment_line(global.buffer)) {
         // Komentarz lub pusty wiersz.
-        return PARSE_ERROR;
+        return PARSE_CONTINUE;
     }
     char *str_mode = strtok(global.buffer, WHITE_SPACES);
     if (ISNULL(str_mode) && strlen(str_mode) != 1) {
-        print_error();
+        report_error();
         return PARSE_ERROR;
     }
     int result = 0;
@@ -83,12 +81,12 @@ int parse_line(char *cmd, int params_size, uint32_t params[params_size]) {
         }
         result++;
         if (!string_to_uint32(str, &params[i])) {
-            print_error();
+            report_error();
             return PARSE_ERROR;
         }
     }
     if (strtok(NULL, WHITE_SPACES) != NULL) {
-        print_error();
+        report_error();
         return PARSE_ERROR;
     }
     *cmd = str_mode[0];

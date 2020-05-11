@@ -777,9 +777,9 @@ typedef struct {
 
 #define TEST(t) {#t, t}
 
-static const test_list_t test_list[] = {
+/*static const test_list_t test_list[] = {
         TEST(memory_alloc),
-};
+};*/
 
 int main() {
     const struct CMUnitTest tests[] = {
