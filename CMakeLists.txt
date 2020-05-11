@@ -27,13 +27,13 @@ set(SOURCE_FILES
         src/field.h
         src/stringology.c
         src/stringology.h
-        )
+        src/batchmode.h
+        src/batchmode.c src/input_interface.c src/input_interface.h)
 
 # Wskazujemy plik zawierający funkcję main.
 set(TEST_FILE src/gamma_test.c)
 
-# Wskazujemy plik wykonywalny.
-add_executable(gamma ${SOURCE_FILES} ${TEST_FILE})
+add_executable(gamma src/gamma_main.c ${SOURCE_FILES})
 
 # Dodajemy obsługę Doxygena: sprawdzamy, czy jest zainstalowany i jeśli tak to:
 find_package(Doxygen)
@@ -48,3 +48,14 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
     )
 endif (DOXYGEN_FOUND)
+
+
+find_library(CMOCKA cmocka)
+if(CMOCKA)
+    message("Find cmocka")
+    add_executable(gamma_test ${SOURCE_FILES} src/gamma_test.c)
+    target_link_libraries(gamma_test ${CMOCKA})
+    add_test(gamma_part1 gamma_test)
+endif()
+
+enable_testing()

@@ -304,6 +304,9 @@ uint64_t gamma_busy_fields(gamma_t *g, uint32_t player) {
 
 uint64_t gamma_free_fields(gamma_t *g, uint32_t player) {
     player_t *player_info = gamma_get_player(g, player);
+    if (ISNULL(player_info)) {
+        return 0;
+    }
     if (player_info->areas == g->areas_limit) {
         return player_info->free_adjoining;
     } else {

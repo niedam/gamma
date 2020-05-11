@@ -7,6 +7,9 @@
 #ifndef STRINGOLOGY_H
 #define STRINGOLOGY_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 
 /** @brief Długość zapisu dziesiętnego liczby.
  * @param[in] number        – liczba.
@@ -26,5 +29,15 @@ uint32_t uint32_length(uint32_t number);
  * @return Ilość znaków wpisanych do bufora.
  */
 int player_write(char *buff, int n, uint32_t player, uint32_t num_len);
+
+bool char_check(char c, const char *char_set);
+
+bool string_to_uint32(const char *string, uint32_t *result);
+
+bool check_valid_line(const char *line);
+
+bool check_blank_line(const char *line);
+
+bool check_comment_line(const char *line);
 
 #endif /* STRINGOLOGY_H */
