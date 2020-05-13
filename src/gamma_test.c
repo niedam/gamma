@@ -1,5 +1,5 @@
 /** @file
- * Przykładowe użycie silnika gry gamma
+ * Przykładowe użycie silnika gry gamma.
  *
  * @author Marcin Peczarski <marpe@mimuw.edu.pl>
  * @copyright Uniwersytet Warszawski
@@ -159,6 +159,7 @@ static void example(void **state) {
     gamma_delete(g);
 }
 
+
 /* Testuje najmniejszą możliwą grę. */
 static void minimal(void **state) {
     (void) state;
@@ -169,6 +170,7 @@ static void minimal(void **state) {
     assert_true(gamma_free_fields(g, 1) == 0);
     gamma_delete(g);
 }
+
 
 /* Testuje sprawdzanie poprawności parametrów poszczególnych funkcji. */
 static void params(void **state) {
@@ -218,6 +220,7 @@ static void params(void **state) {
     gamma_delete(g);
 }
 
+
 /* Testuje, czy nie ma problemów przy wypisywaniu planszy w grze
  * z dużą liczbą graczy. */
 static void many_players(void **state) {
@@ -236,6 +239,7 @@ static void many_players(void **state) {
 
     gamma_delete(g);
 }
+
 
 /* Testuje, czy można rozgrywać równocześnie więcej niż jedną grę. */
 static void many_games(void **state) {
@@ -284,11 +288,13 @@ static void many_games(void **state) {
     gamma_delete(g[i][j]);
 }
 
+
 /* Testuje, czy gamma_delete wywołane z parametrem NULL nic nie robi. */
 static void delete_null(void **state) {
     (void) state;
     gamma_delete(NULL);
 }
+
 
 /* Uruchamia kilka krótkich testów poprawności wykonywania zwykłych ruchów oraz
  * obliczania liczby zajętych i wolnych pól po wykonaniu zwykłego ruchu. */
@@ -354,6 +360,7 @@ static void normal_move(void **state) {
 
     gamma_delete(g);
 }
+
 
 /* Uruchamia kilka krótkich testów poprawności wykonywania zwykłych ruchów
  * i złotych ruchów oraz obliczania liczby zajętych i wolnych pól po wykonaniu
@@ -449,6 +456,7 @@ static void golden_move(void **state) {
     gamma_delete(g);
 }
 
+
 /* Testuje zgodność implementacji funkcji golden_possible z jej opisem. */
 static void golden_possible(void **state) {
     (void) state;
@@ -481,6 +489,7 @@ static void golden_possible(void **state) {
     gamma_delete(g);
 }
 
+
 /* Testuje liczenie obszarów jednego gracza. */
 static void areas(void **state) {
     (void) state;
@@ -506,6 +515,7 @@ static void areas(void **state) {
 
     gamma_delete(g);
 }
+
 
 /* Testuje rozgałęzione obszary. */
 static void tree(void **state) {
@@ -610,6 +620,7 @@ static void tree(void **state) {
     gamma_delete(g);
 }
 
+
 /* Testuje ruchy wykonywane wyłącznie na brzegu planszy. */
 static void border(void **state) {
     (void) state;
@@ -666,29 +677,6 @@ static void border(void **state) {
     gamma_delete(g);
 }
 
-/* Wykonanie niektórych funkcji w tym teście może się nie udać z powodu braku
- * pamięci, ale nie powinno to skutkować załamaniem wykonywania programu. */
-static int memory_alloc(void) {
-    gamma_t *g = gamma_new(SMALL_BOARD_SIZE, SMALL_BOARD_SIZE, 2, 2);
-    assert(g != NULL);
-
-    /* Alokujemy całą dostępną pamięć. */
-    for (size_t s = 1024 * 1024 * 1024; s >= 1; s /= 2) {
-        void *p;
-        do {
-            p = malloc(s);
-        } while (p);
-    }
-
-    while (gamma_new(MIDDLE_BOARD_SIZE, MIDDLE_BOARD_SIZE, 10, 3) != NULL);
-
-    for (uint32_t x = 0; x < SMALL_BOARD_SIZE; ++x)
-        for (uint32_t y = 0; y < SMALL_BOARD_SIZE; ++y)
-            gamma_move(g, 1, x, y);
-
-    /* To jest test alokacji pamięci – nie zwalniamy jej. */
-    return MEM_PASS;
-}
 
 /* Testuje odporność implementacji na duże wartości parametrów w gamma_new. */
 static void big_board(void **state) {
@@ -741,6 +729,7 @@ static void big_board(void **state) {
     assert_true(success > 0);
 }
 
+
 /* Testuje ogranicznenia na rozmiar planszy w gamma_new. */
 static void middle_board(void **state) {
     (void) state;
@@ -768,19 +757,8 @@ static void middle_board(void **state) {
     assert_true(success > 0);
 }
 
+
 /** URUCHAMIANIE TESTÓW **/
-
-typedef struct {
-    char const *name;
-    int (*function)(void);
-} test_list_t;
-
-#define TEST(t) {#t, t}
-
-/*static const test_list_t test_list[] = {
-        TEST(memory_alloc),
-};*/
-
 int main() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(example),

@@ -332,7 +332,7 @@ char* gamma_board(gamma_t *g) {
      * są w blokach o długości ilości cyfr w liczbie graczy.
      * Przestrzeń niewykorzystywana w ramach bloku wypełniana jest spacjami.
      */
-    size_t max_len = uint32_length(g->no_players);
+    int max_len = uint32_length(g->no_players);
     size_t size = max_len * g->width * g->height + g->height + 1;
     char *result = calloc(sizeof(char), size);
     if (ISNULL(result)) {
@@ -350,4 +350,17 @@ char* gamma_board(gamma_t *g) {
     }
     result[size - 1] = '\0';
     return result;
+}
+
+
+uint32_t gamma_width(gamma_t *g) {
+    return g->width;
+}
+
+uint32_t gamma_height(gamma_t *g) {
+    return g->height;
+}
+
+uint32_t gamma_players(gamma_t *g) {
+    return g->no_players;
 }

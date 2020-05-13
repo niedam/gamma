@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <ctype.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "input_interface.h"
@@ -59,7 +59,7 @@ int parse_line(char *cmd, int params_size, uint32_t params[params_size]) {
     } else if (global.line_length < 0) {
         return PARSE_END;
     }
-    if (!check_valid_line(global.buffer)) {
+    if (!check_valid_line(global.buffer, global.line_length)) {
         // Linia niezakończona `\n`.
         report_error();
         return PARSE_ERROR;
@@ -67,6 +67,10 @@ int parse_line(char *cmd, int params_size, uint32_t params[params_size]) {
     if (check_blank_line(global.buffer) || check_comment_line(global.buffer)) {
         // Komentarz lub pusty wiersz.
         return PARSE_CONTINUE;
+    }
+    if (isspace(global.buffer[0])) {
+        report_error();
+        return PARSE_ERROR;
     }
     char *str_mode = strtok(global.buffer, WHITE_SPACES);
     if (ISNULL(str_mode) && strlen(str_mode) != 1) {

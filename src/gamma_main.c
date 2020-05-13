@@ -2,15 +2,29 @@
 #include "gamma.h"
 #include "input_interface.h"
 #include "batchmode.h"
+#include "interactivemode.h"
 
+#define ISNULL(ptr) (ptr == NULL)
 
 static struct {
     gamma_t *game;
 } global = { .game = NULL };
 
-void finish_program() {
+static void finish_program() {
     gamma_delete(global.game);
     global.game = NULL;
+}
+
+static bool check_gamma_new(const uint32_t params[]) {
+    if (ISNULL(params)) {
+        return false;
+    }
+    for (size_t i = 0; i < 4; i++) {
+        if (params[i] == 0) {
+            return false;
+        }
+    }
+    return true;
 }
 
 int main() {
@@ -23,8 +37,14 @@ int main() {
         if (resp == PARSE_END) {
             exit(EXIT_SUCCESS);
         } else if (resp == 4 && (mode == 'I' || mode == 'B')) {
-            report_ok();
-            break;
+            if (check_gamma_new(params)) {
+                report_ok();
+                break;
+            } else {
+                report_error();
+            }
+        } else if (resp >= 0) {
+            report_error();
         }
     }
     global.game = gamma_new(params[0], params[1],
@@ -34,6 +54,8 @@ int main() {
             batch_run(global.game);
             break;
         case 'I':
+            interactive_run(global.game);
+            break;
         default:
             break;
     }

@@ -12,7 +12,6 @@
 #define ISNULL(ptr) (ptr == NULL)
 
 
-
 struct batch_command {
     char command;
     int param_size;
@@ -64,18 +63,21 @@ static void batch_command_run(gamma_t *g, char command, int param_size, const ui
         report_error();
         return;
     }
+    char *string;
     switch (commands[cmd_id].signature) {
         case move_function:
             printf("%d\n", commands[cmd_id].move_function(g, params[0], params[1], params[2]));
             break;
         case fields_function:
-            printf("%" PRId64 "\n", commands[cmd_id].fields_function(g, params[0]));
+            printf("%ld\n", commands[cmd_id].fields_function(g, params[0]));
             break;
         case check_function:
-            printf("%d", commands[cmd_id].check_function(g, params[0]));
+            printf("%d\n", commands[cmd_id].check_function(g, params[0]));
             break;
         case string_function:
-            printf("%s", commands[cmd_id].string_function(g));
+            string = commands[cmd_id].string_function(g);
+            printf("%s", string);
+            free(string);
             break;
         default:
             break;

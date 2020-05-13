@@ -28,7 +28,7 @@ set(SOURCE_FILES
         src/stringology.c
         src/stringology.h
         src/batchmode.h
-        src/batchmode.c src/input_interface.c src/input_interface.h)
+        src/batchmode.c src/input_interface.c src/input_interface.h src/interactivemode.c src/interactivemode.h src/gamma_model.c src/gamma_model.h)
 
 # Wskazujemy plik zawierający funkcję main.
 set(TEST_FILE src/gamma_test.c)
@@ -51,11 +51,16 @@ endif (DOXYGEN_FOUND)
 
 
 find_library(CMOCKA cmocka)
-if(CMOCKA)
+if (CMOCKA)
     message("Find cmocka")
     add_executable(gamma_test ${SOURCE_FILES} src/gamma_test.c)
     target_link_libraries(gamma_test ${CMOCKA})
-    add_test(gamma_part1 gamma_test)
-endif()
+    add_test(official_part1 gamma_test)
+endif (CMOCKA)
+
+file(COPY tests/test.sh DESTINATION .)
+
+add_test(official_part2 ./test.sh ./gamma ${CMAKE_SOURCE_DIR}/tests/official_part2/)
+add_test(unofficial_part2 ./test.sh ./gamma ${CMAKE_SOURCE_DIR}/tests/unofficial_part2/)
 
 enable_testing()

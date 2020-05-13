@@ -9,13 +9,17 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/param.h>
 
 
 /** @brief Długość zapisu dziesiętnego liczby.
  * @param[in] number        – liczba.
  * @return Długość zapisu dziesiętnego podanej liczby.
  */
-uint32_t uint32_length(uint32_t number);
+int uint32_length(uint32_t number);
+
+
+int uint64_length(uint64_t number);
 
 
 /** @brief Wypisanie gracza do bufora tekstowego.
@@ -34,7 +38,7 @@ bool char_check(char c, const char *char_set);
 
 bool string_to_uint32(const char *string, uint32_t *result);
 
-bool check_valid_line(const char *line);
+bool check_valid_line(const char *line, ssize_t len);
 
 bool check_blank_line(const char *line);
 

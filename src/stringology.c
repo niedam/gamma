@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <values.h>
 #include <errno.h>
+#include <ctype.h>
 #include "stringology.h"
 
 #define ISNULL(ptr) (ptr == NULL)
@@ -12,16 +13,22 @@
 #define WHITE_SPACES " \t\v\f\r\n"
 #define NUMBER_CHAR "0123456789"
 
-uint32_t uint32_length(uint32_t number)  {
+
+int uint64_length(uint64_t number)  {
     if (number == 0) {
         return 1;
     }
-    uint32_t result = 0;
+    int result = 0;
     while (number > 0) {
         result++;
         number /= 10;
     }
     return result;
+}
+
+
+int uint32_length(uint32_t number)  {
+    return uint64_length((uint64_t) number);
 }
 
 
@@ -71,13 +78,21 @@ bool string_to_uint32(const char *string, uint32_t *result) {
 }
 
 
-bool check_valid_line(const char *line) {
-    return !ISNULL(line) && line[strlen(line) - 1] == '\n';
+bool check_valid_line(const char *line, ssize_t len) {
+    if (ISNULL(line)) {
+        return false;
+    }
+    for (ssize_t i = 0; i < len; i++) {
+        if (line[i] == '\0') {
+            return false;
+        }
+    }
+    return line[len - 1] == '\n';
 }
 
 
 bool check_blank_line(const char *line) {
-    return !ISNULL(line) && strspn(line, WHITE_SPACES) == strlen(line);
+    return !ISNULL(line) && strcmp(line, "\n") == 0;
 }
 
 

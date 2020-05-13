@@ -19,11 +19,6 @@
 typedef struct gamma gamma_t;
 
 
-/** Parametry funcji @ref gamma_new.
- */
-
-
-
 /** @brief Tworzy strukturę przechowującą stan gry.
  * Alokuje pamięć na nową strukturę przechowującą stan gry.
  * Inicjuje tę strukturę tak, aby reprezentowała początkowy stan gry.
@@ -124,6 +119,15 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player);
  * planszy lub NULL, jeśli nie udało się zaalokować pamięci.
  */
 char* gamma_board(gamma_t *g);
+
+
+uint32_t gamma_width(gamma_t *g);
+
+
+uint32_t gamma_height(gamma_t *g);
+
+
+uint32_t gamma_players(gamma_t *g);
 
 
 #endif /* GAMMA_H */
