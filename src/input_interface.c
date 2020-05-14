@@ -1,3 +1,11 @@
+/** @file
+ * Implementacja obsługi standardowego wejścia oraz wypisywania komunikatów.
+ * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
+ * @date 17.05.2020
+ */
+
+/** Makro umożliwiające używanie funkcji `getline()`.
+ */
 #define  _GNU_SOURCE
 #include <stddef.h>
 #include <stdio.h>
@@ -8,11 +16,25 @@
 #include "input_interface.h"
 #include "stringology.h"
 
+
+/** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
+ * @param[in] ptr           – sprawdzany wskaźnik.
+ */
 #define ISNULL(ptr) (ptr == NULL)
 
+
+/** Stała reprezentująca ciąg białych znaków.
+ */
 #define WHITE_SPACES " \t\v\f\r\n"
+
+
+/** Początkowa wielkość bufora wczytywanych danych.
+ */
 #define INITIAL_BUFFER_SIZE 32
 
+
+/** Anonimowa struktura przechowująca zmienne bufora.
+ */
 static struct {
     int count_read_lines;
     size_t buffer_size;
@@ -25,16 +47,24 @@ void report_error() {
     fprintf(stderr, "ERROR %d\n", global.count_read_lines);
 }
 
+
 void report_ok() {
     printf("OK %d\n", global.count_read_lines);
 }
 
+
+/** @brief Zwolnienie zasobów związanych z buforem.
+ * Funkcje należy wywołać przed zakończeniem programu.
+ */
 static void finish_program() {
     free(global.buffer);
     global.buffer_size = 0;
     global.buffer = NULL;
 }
 
+
+/** @brief Zainicjowanie bufora.
+ */
 static void init_buffer() {
     if (ISNULL(global.buffer) && global.buffer_size == 0) {
         global.buffer_size = INITIAL_BUFFER_SIZE;

@@ -2,7 +2,7 @@
  * Implementacja struktury pola na planszy gry Gamma.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @date 17.04.2020
+ * @date 17.05.2020
  */
 
 #include <stdlib.h>
@@ -18,7 +18,8 @@
 /** Struktura przechowująca informacje o polu planszy.
  */
 typedef struct field {
-    struct field *adjoining[4]; /**< Tablica wszystkich sąsiadujących pól. */
+    struct field *adjoining[ADJOINING_FIELDS]; /**< Tablica wszystkich
+                                                * sąsiadujących pól. */
     uint32_t size_adjoining; /**< Ilość sąsiadujących pól. */
     field_t *next_node; /**< Pomocnicze pole do zorganizowania pól w kolejkę. */
     /** Struktura reprezentująca obszar pól.
@@ -61,13 +62,13 @@ static void field_init(field_t *fields, uint32_t x, uint32_t y,
     f->owner = 0;
     f->area = (struct area){ .prev = &f->area, .next = &f->area,
                               .repr = &f->area, .size = 1};
-    for (uint32_t i = 0; i < 4; ++i) {
+    for (uint32_t i = 0; i < ADJOINING_FIELDS; ++i) {
         f->adjoining[i] = NULL;
     }
     uint32_t last = 0;
-    int v_x[4] = {0, -1, 0, 1};
-    int v_y[4] = {1, 0, -1, 0};
-    for (uint32_t i = 0; i < 4; ++i) {
+    int v_x[ADJOINING_FIELDS] = {0, -1, 0, 1};
+    int v_y[ADJOINING_FIELDS] = {1, 0, -1, 0};
+    for (uint32_t i = 0; i < ADJOINING_FIELDS; ++i) {
         if (x + v_x[i] + 1 > 0 && x + v_x[i] + 1 <= max_x
                 && y + v_y[i] + 1 > 0 && y + v_y[i] + 1 <= max_y) {
             f->adjoining[last] =
@@ -96,14 +97,14 @@ void field_set_owner(field_t *field, uint32_t new_owner) {
 }
 
 
-void field_adjoining(field_t *field, field_t *adjoining[4]) {
+void field_adjoining(field_t *field, field_t *adjoining[ADJOINING_FIELDS]) {
     if (ISNULL(field) || ISNULL(adjoining)) {
         return;
     }
     for (uint32_t i = 0; i < field->size_adjoining; ++i) {
         adjoining[i] = field->adjoining[i];
     }
-    for (uint32_t i = field->size_adjoining; i < 4; ++i) {
+    for (uint32_t i = field->size_adjoining; i < ADJOINING_FIELDS; ++i) {
         adjoining[i] = NULL;
     }
 }
@@ -181,6 +182,7 @@ void field_connect_area(field_t *field1, field_t *field2) {
     next1->prev = prev2;
     prev2->next = next1;
 }
+
 
 void field_split_area(field_t *field) {
     if (ISNULL(field)) {

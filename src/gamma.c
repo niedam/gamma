@@ -2,7 +2,7 @@
  * Implementacja struktury i metod klasy przechowującej stan gry Gamma.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @date 17.04.2020
+ * @date 17.05.2020
  */
 
 #include <stdlib.h>
@@ -108,7 +108,7 @@ static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
     g->ocupied_fields++;
     player->occupied_fields++;
     player->areas += 1 - field_count_adjoining_areas(field, player->id);
-    field_t *adjoining[4];
+    field_t *adjoining[ADJOINING_FIELDS];
     field_adjoining(field, adjoining);
     for (uint32_t i = 0; i < field_adjoining_size(field); ++i) {
         if (field_owner(adjoining[i]) != 0) {
@@ -135,7 +135,6 @@ static void gamma_take_field(gamma_t *g, player_t *player, field_t *field) {
             field_connect_area(adjoining[i], field);
         }
     }
-
 }
 
 
@@ -157,7 +156,7 @@ static void gamma_release_field(gamma_t *g, field_t *field) {
     field_split_area(field);
     field_rebuild_areas_around(field, owner->id);
     uint32_t diff;
-    field_t *adjoining[4];
+    field_t *adjoining[ADJOINING_FIELDS];
     field_adjoining(field, adjoining);
     for (uint32_t i = 0; i < field_adjoining_size(field); ++i) {
         if (field_owner(adjoining[i]) != 0) {
@@ -277,11 +276,10 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
         /* Gracz osiągnął limit obszarów i nie powiększy żadnego istniejącego.
         */
         return false;
-
     }
     player_t *owner = gamma_get_player(g, field_owner(field));
     uint32_t areas_after_breaking = field_count_adjoining_areas_after_breaking(field);
-    if (g->areas_limit - owner->areas < 4 && g->areas_limit <
+    if (g->areas_limit - owner->areas < ADJOINING_FIELDS && g->areas_limit <
                                     areas_after_breaking - 1 + owner->areas) {
         /* Zdjęcie pionka innemu graczu stworzyłoby mu obszary ponad limit.
          */
@@ -314,6 +312,7 @@ uint64_t gamma_free_fields(gamma_t *g, uint32_t player) {
     }
 }
 
+
 bool gamma_golden_possible(gamma_t *g, uint32_t player) {
     player_t *p_info = gamma_get_player(g, player);
     if (ISNULL(g) || ISNULL(p_info)) {
@@ -332,7 +331,7 @@ char* gamma_board(gamma_t *g) {
      * są w blokach o długości ilości cyfr w liczbie graczy.
      * Przestrzeń niewykorzystywana w ramach bloku wypełniana jest spacjami.
      */
-    int max_len = uint32_length(g->no_players);
+    int max_len = uint64_length((uint64_t) g->no_players);
     size_t size = max_len * g->width * g->height + g->height + 1;
     char *result = calloc(sizeof(char), size);
     if (ISNULL(result)) {
@@ -353,14 +352,16 @@ char* gamma_board(gamma_t *g) {
 }
 
 
-uint32_t gamma_width(gamma_t *g) {
-    return g->width;
+uint32_t gamma_width(const gamma_t *g) {
+    return !ISNULL(g) ? g->width : 0;
 }
 
-uint32_t gamma_height(gamma_t *g) {
-    return g->height;
+
+uint32_t gamma_height(const gamma_t *g) {
+    return !ISNULL(g) ? g->height : 0;
 }
 
-uint32_t gamma_players(gamma_t *g) {
-    return g->no_players;
+
+uint32_t gamma_players(const gamma_t *g) {
+    return !ISNULL(g) ? g->no_players : 0;
 }

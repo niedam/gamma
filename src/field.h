@@ -2,7 +2,7 @@
  * Definicja pola na planszy gry Gamma oraz deklaracja związanych z nim funkcji.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @date 17.04.2020
+ * @date 17.05.2020
  */
 
 #ifndef FIELD_H
@@ -10,6 +10,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
+
+/** Liczba pól które mogą sąsiadować z danym polem. */
+#define ADJOINING_FIELDS 4
 
 
 /** Struktura przechowująca informacje o pojedyńczym polu w grze.
@@ -41,7 +45,7 @@ void field_set_owner(field_t *field, uint32_t new_owner);
  * @param[out] adjoining    – tablica, do której zostaną zapisani sąsiedzi pola
  *                            @p field.
  */
-void field_adjoining(field_t *field, field_t *adjoining[4]);
+void field_adjoining(field_t *field, field_t *adjoining[ADJOINING_FIELDS]);
 
 
 /** @brief Ilość pól sąsiadujących.
@@ -125,5 +129,6 @@ uint32_t field_count_adjoining_areas_after_breaking(field_t *field);
  * @param[in] player_id     – identyfikator gracza.
  */
 void field_rebuild_areas_around(field_t *field, uint32_t player_id);
+
 
 #endif /* FIELD_H */

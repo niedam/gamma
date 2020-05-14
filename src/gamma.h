@@ -12,7 +12,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define GAMMA_PARAMS_SIZE 4
+
+/** Liczba parametrów funkcji @ref gamma_new.
+ */
+#define GAMMA_NEW_PARAMS_SIZE 4
+
 
 /** Struktura przechowująca stan gry.
  */
@@ -121,13 +125,33 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player);
 char* gamma_board(gamma_t *g);
 
 
-uint32_t gamma_width(gamma_t *g);
+/** @brief Podaje szerokość planszy.
+ * Funkcja zwraca wartość parametru `width` podanego przy wywołaniu
+ * funkcji @ref gamma_new.
+ * @param[in] g       – wskaźnik na strukturę przechowującą stan gry.
+ * @return Liczba będąca szerokością planszy lub zero gdy podany parametr jest
+ * niepoprawny.
+ */
+uint32_t gamma_width(const gamma_t *g);
 
 
-uint32_t gamma_height(gamma_t *g);
+/** @brief Podaje wysokość planszy.
+ * Funkcja zwraca wartość parametru `height` podanego przy wywołaniu
+ * funkcji @ref gamma_new.
+ * @param[in] g       – wskaźnik na strukturę przechowującą stan gry.
+ * @return Liczba będąca wysokością planszy lub zero gdy podany parametr jest
+ * niepoprawny.
+ */
+uint32_t gamma_height(const gamma_t *g);
 
 
-uint32_t gamma_players(gamma_t *g);
+/** @brief Podaje liczbę graczy w rozgrywce.
+ * Funkcja zwraca wartość parametru `players` podanego przy wywołaniu
+ * funkcji @ref gamma_new.
+ * @param[in] g       – wskaźnik na strukturę przechowującą stan gry.
+ * @return Liczba graczy lub zero gdy podany parametr jest niepoprawny.
+ */
+uint32_t gamma_players(const gamma_t *g);
 
 
 #endif /* GAMMA_H */

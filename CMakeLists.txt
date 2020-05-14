@@ -28,7 +28,11 @@ set(SOURCE_FILES
         src/stringology.c
         src/stringology.h
         src/batchmode.h
-        src/batchmode.c src/input_interface.c src/input_interface.h src/interactivemode.c src/interactivemode.h src/gamma_model.c src/gamma_model.h)
+        src/batchmode.c
+        src/input_interface.c
+        src/input_interface.h
+        src/interactivemode.c
+        src/interactivemode.h)
 
 # Wskazujemy plik zawierający funkcję main.
 set(TEST_FILE src/gamma_test.c)

@@ -1,25 +1,48 @@
+/** @file
+ * Program obsługujący rozgrywkę w grę Gamma.
+ *
+ * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
+ * @date 17.05.2020
+ */
 #include <stdlib.h>
 #include "gamma.h"
 #include "input_interface.h"
 #include "batchmode.h"
 #include "interactivemode.h"
 
+
+/** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
+ * @param[in] ptr           – sprawdzany wskaźnik.
+ */
 #define ISNULL(ptr) (ptr == NULL)
 
-static struct {
-    gamma_t *game;
-} global = { .game = NULL };
 
+/** Silnik gry Gamma działający w ramach programu.
+ */
+static gamma_t *engine = NULL;
+
+
+/** Zwolnienie zaalokowanych zasobów silnika Gamma.
+ * Funckje należy wywołać pod koniec działania programu.
+ */
 static void finish_program() {
-    gamma_delete(global.game);
-    global.game = NULL;
+    gamma_delete(engine);
 }
 
-static bool check_gamma_new(const uint32_t params[]) {
+
+/** Sprawdzenie poprawności parametrów gamma_new.
+ * Funkcja sprawdza, czy podane na wejściu liczby są poprawnymi argumentami
+ * funkcji @ref gamma_new, czyli czy są niezerowe.
+ * @param[in] params_size   – długość tablicy parametrów,
+ * @param[in] params        – tablica liczb do sprawdzenia.
+ * @return Wartość @p true, jeżeli parametry są poprawne, @p false w
+ * przeciwnym wypadku.
+ */
+static bool check_gamma_new(int params_size, const uint32_t params[params_size]) {
     if (ISNULL(params)) {
         return false;
     }
-    for (size_t i = 0; i < 4; i++) {
+    for (int i = 0; i < params_size; i++) {
         if (params[i] == 0) {
             return false;
         }
@@ -27,34 +50,42 @@ static bool check_gamma_new(const uint32_t params[]) {
     return true;
 }
 
+
+/** Główna funkcja programu Gamma. */
 int main() {
     atexit(finish_program);
-    uint32_t params[GAMMA_PARAMS_SIZE];
+    uint32_t params[GAMMA_NEW_PARAMS_SIZE];
     int resp;
     char mode;
     while (true) {
-        resp = parse_line(&mode, GAMMA_PARAMS_SIZE, params);
+        resp = parse_line(&mode, GAMMA_NEW_PARAMS_SIZE, params);
         if (resp == PARSE_END) {
+            // Koniec standardowego wejścia.
             exit(EXIT_SUCCESS);
-        } else if (resp == 4 && (mode == 'I' || mode == 'B')) {
-            if (check_gamma_new(params)) {
+        } else if (resp == GAMMA_NEW_PARAMS_SIZE && (mode == 'I' || mode == 'B')) {
+            if (check_gamma_new(GAMMA_NEW_PARAMS_SIZE, params)) {
+                // Deklaracja planszy jest poprawna.
                 report_ok();
                 break;
             } else {
+                // Niepoprawne parametry planszy (wartości zero).
                 report_error();
             }
         } else if (resp >= 0) {
+            // Zła liczba parametrów lub nieodpowiedni tryb programu.
             report_error();
         }
     }
-    global.game = gamma_new(params[0], params[1],
+    engine = gamma_new(params[0], params[1],
                             params[2], params[3]);
     switch (mode) {
         case 'B':
-            batch_run(global.game);
+            // Przejście do trybu wsadowego.
+            batch_run(engine);
             break;
         case 'I':
-            interactive_run(global.game);
+            // Przejście do trybu interaktywnego.
+            interactive_run(engine);
             break;
         default:
             break;

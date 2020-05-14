@@ -1,3 +1,10 @@
+/** @file
+ * Implementacja funkcji do przetwarzania i obsługi ciągów znaków.
+ *
+ * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
+ * @date 17.05.2020
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -5,12 +12,22 @@
 #include <stdlib.h>
 #include <values.h>
 #include <errno.h>
-#include <ctype.h>
 #include "stringology.h"
 
+
+/** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
+ * @param[in] ptr           – sprawdzany wskaźnik.
+ */
 #define ISNULL(ptr) (ptr == NULL)
 
+
+/** Stała reprezentująca ciąg białych znaków.
+ */
 #define WHITE_SPACES " \t\v\f\r\n"
+
+
+/** Stała reprezentująca ciąg cyfr.
+ */
 #define NUMBER_CHAR "0123456789"
 
 
@@ -24,11 +41,6 @@ int uint64_length(uint64_t number)  {
         number /= 10;
     }
     return result;
-}
-
-
-int uint32_length(uint32_t number)  {
-    return uint64_length((uint64_t) number);
 }
 
 
@@ -58,7 +70,6 @@ bool char_check(char c, const char *char_set) {
         i++;
     }
     return false;
-
 }
 
 
@@ -82,6 +93,9 @@ bool check_valid_line(const char *line, ssize_t len) {
     if (ISNULL(line)) {
         return false;
     }
+    /** Funkcja sprawdza, czy wiersz kończy się znakiem końca linii,
+     * oraz czy nie występują w nim znaki `\0` przed końcem wiersza.
+     */
     for (ssize_t i = 0; i < len; i++) {
         if (line[i] == '\0') {
             return false;
