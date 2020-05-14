@@ -355,8 +355,7 @@ static void interactive_control(struct interactive_model *m) {
             case (int) 'g':
                 interactive_move(m, gamma_golden_move);
                 break;
-            case (int) 'M':
-            case (int) 'm':
+            case (int) ' ':
                 interactive_move(m, gamma_move);
                 break;
             case (int) 'C':

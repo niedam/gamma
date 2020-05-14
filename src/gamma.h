@@ -1,9 +1,10 @@
 /** @file
  * Interfejs klasy przechowującej stan gry Gamma.
  *
- * @author Marcin Peczarski <marpe@mimuw.edu.pl>
+ * @author Marcin Peczarski <marpe@mimuw.edu.pl>,
+ *         Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
  * @copyright Uniwersytet Warszawski
- * @date 18.03.2020
+ * @date 17.05.2020
  */
 
 #ifndef GAMMA_H
