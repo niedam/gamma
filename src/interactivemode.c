@@ -10,6 +10,8 @@
 
 #define ISNULL(ptr) (ptr == NULL)
 
+#define ANSWER_YES "YES"
+#define ANSWER_NO "NO"
 
 #define CLEAR_CONSOLE "\033c"
 #define SHOW_CURSOR "\033[?25h"
@@ -22,8 +24,14 @@
 #define BOARD_SIGNATURE DISABLED_WRAPLINE "%.*s" \
                         ENABLED_HIGHLINE "%.*s" DISABLED_HIGHLINE \
                         "%s" ENABLED_WRAPLINE
-#define PLAYER_SIGNATURE "<PLAYER %*.d | Busy fields: %*.1"PRIu64" | " \
-                         "Free fields: %*.1"PRIu64" | Golden move: %3.3s>\n"
+#define PLAYER_SIGNATURE "<PLAYER %*.d | Busy: %*.1"PRIu64" | " \
+                         "Free: %*.1"PRIu64" | Golden move: %3.3s>\n"
+
+
+#define UP_KEY 65
+#define DOWN_KEY 66
+#define RIGHT_KEY 67
+#define LEFT_KEY 68
 
 
 
@@ -37,6 +45,9 @@
             /* Reszta planszy do wypisania: */ board + first + id_len
 
 
+/**
+ *
+ */
 #define PLAYER_DESCRIPTION(player_id, length_id, length_fields, \
                            busy_fields, free_fields, golden_move) \
             /* Długość identyfikatorów graczy: */ length_id, \
@@ -92,22 +103,29 @@ static void interactive_init(gamma_t *g, struct interactive_model *m) {
 }
 
 
-/**
- *
- * @param m
- * @param fun_move
- */
-static void interactive_move(struct interactive_model *m,
-                             bool (*fun_move)(gamma_t *, uint32_t, uint32_t, uint32_t)) {
-    if (ISNULL(fun_move) || ISNULL(m)) {
+static bool interactive_available_player(const struct interactive_model *m) {
+    if (ISNULL(m)) {
+        return false;
+    }
+    return gamma_golden_possible(m->game, m->current_player)
+           || gamma_free_fields(m->game, m->current_player) > 0;
+}
+
+
+static void interactive_cursor(struct interactive_model *m, int x, int y) {
+    if (ISNULL(m)) {
         return;
     }
-    if (fun_move(m->game, m->current_player,
-                 m->current_column, gamma_height(m->game) - 1 - m->current_row)) {
-        m->current_player = m->current_player == gamma_players(m->game) ?
-                            1 : m->current_player + 1;
+    uint32_t board_width = gamma_width(m->game);
+    uint32_t board_height = gamma_height(m->game);
+    // Sprawdzenie, czy kursor znajduje się na poprawnej pozycji.
+    if (m->current_column + 1 + x >= 1 && m->current_column + x < board_width
+         && m->current_row + 1 + y >= 1 && m->current_row + y < board_height) {
+        m->current_column += x;
+        m->current_row += y;
     }
 }
+
 
 static void interactive_view(struct interactive_model *m) {
     if (ISNULL(m)) {
@@ -116,13 +134,17 @@ static void interactive_view(struct interactive_model *m) {
     char *board = gamma_board(m->game);
     uint64_t busy_fields = gamma_busy_fields(m->game, m->current_player);
     uint64_t free_fields = gamma_free_fields(m->game, m->current_player);
-    const char *golden_move = gamma_golden_possible(m->game, m->current_player) ? "YES" : "NO";
-    uint32_t i = (gamma_width(m->game)) * m->current_row + m->current_column;
-    i *= uint32_length(gamma_players(m->game));
-    i += m->current_row;
+    const char *golden_move = gamma_golden_possible(m->game, m->current_player)
+                              ? ANSWER_YES : ANSWER_NO;
+    // Ile początkowych znaków planszy wypisać przed wyróżnieniem
+    // aktualnie zaznaczonego kursorem pola:
+    uint32_t first_chars = (gamma_width(m->game)) * m->current_row + m->current_column;
+    first_chars *= uint32_length(gamma_players(m->game));
+    first_chars += m->current_row; // Doliczamy endline'y (1 char na końcu
+                                   // każdego wiersza).
     interactive_clear();
     printf(BOARD_SIGNATURE PLAYER_SIGNATURE,
-           BOARD_DESCRIPTION(board, i, m->player_len),
+           BOARD_DESCRIPTION(board, first_chars, m->player_len),
            PLAYER_DESCRIPTION(m->current_player, m->player_len,
                               m->fields_len, busy_fields,
                               free_fields, golden_move));
@@ -147,47 +169,82 @@ static void interactive_finish(struct interactive_model *m) {
 }
 
 
+static void interactive_next_player(struct interactive_model *m) {
+    uint32_t players = gamma_players(m->game);
+    uint32_t no_move_players = 0;
+    do {
+        m->current_player = m->current_player == gamma_players(m->game) ?
+                            1 : m->current_player + 1;
+        no_move_players++;
+    } while (!interactive_available_player(m) &&  no_move_players < players);
+    if (no_move_players == players) {
+        interactive_finish(m);
+    }
+}
+
+
+/**
+ *
+ * @param m
+ * @param fun_move
+ */
+static void interactive_move(struct interactive_model *m,
+                             bool (*fun_move)(gamma_t *, uint32_t, uint32_t, uint32_t)) {
+    if (ISNULL(fun_move) || ISNULL(m)) {
+        return;
+    }
+    if (fun_move(m->game, m->current_player,
+                 m->current_column, gamma_height(m->game) - 1 - m->current_row)) {
+        interactive_next_player(m);
+    }
+}
+
+
 static void interactive_control(struct interactive_model *m) {
     if (ISNULL(m)) {
         return;
     }
-    uint32_t board_width = gamma_width(m->game);
-    uint32_t board_height = gamma_height(m->game);
     int c = getchar();
-    switch (c) {
-        case 67:
-            if (m->current_column < board_width - 1) {
-                m->current_column++;
-            }
-            break;
-        case 68:
-            if (m->current_column > 0) {
-                m->current_column--;
-            }
-            break;
-        case 65:
-            if (m->current_row > 0) {
-                m->current_row--;
-            }
-            break;
-        case 66:
-            if (m->current_row < board_height - 1) {
-                m->current_row++;
-            }
-            break;
-        case 4:
-            interactive_finish(m);
-            break;
-        case 'G':
-        case 'g':
-            interactive_move(m, gamma_golden_move);
-            break;
-        case 'M':
-        case 'm':
-            interactive_move(m, gamma_move);
-            break;
-        default:
-            break;
+    if (c == 27 && (c = getchar()) == 91) {
+        // Wciśnięcie strzałek.
+        c = getchar();
+        switch (c) {
+            case RIGHT_KEY:
+                interactive_cursor(m, 1, 0);
+                break;
+            case LEFT_KEY:
+                interactive_cursor(m, -1, 0);
+                break;
+            case UP_KEY:
+                interactive_cursor(m, 0, -1);
+                break;
+            case DOWN_KEY:
+                interactive_cursor(m, 0, 1);
+                break;
+            default:
+                break;
+        }
+    } else {
+        // Wciśnięcie normalnych znaków.
+        switch (c) {
+            case 4:
+                interactive_finish(m);
+                break;
+            case (int) 'G':
+            case (int) 'g':
+                interactive_move(m, gamma_golden_move);
+                break;
+            case (int) 'M':
+            case (int) 'm':
+                interactive_move(m, gamma_move);
+                break;
+            case (int) 'C':
+            case (int) 'c':
+                interactive_next_player(m);
+                break;
+            default:
+                break;
+        }
     }
 }
 
