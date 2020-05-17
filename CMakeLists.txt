@@ -55,9 +55,15 @@ endif (DOXYGEN_FOUND)
 
 file(COPY tests/test.sh DESTINATION .)
 
-add_executable(gamma_test ${SOURCE_FILES} src/gamma_test.c)
-add_test(official_part1 gamma_test)
+find_library(CMOCKA cmocka)
+if (CMOCKA)
+    message("Find cmocka")
+    add_executable(gamma_test ${SOURCE_FILES} src/gamma_test.c)
+    target_link_libraries(gamma_test ${CMOCKA})
+    add_test(official_part1 gamma_test)
+endif (CMOCKA)
 
 add_test(official_part2 ./test.sh ./gamma ${CMAKE_SOURCE_DIR}/tests/official_part2/)
+add_test(unofficial_part2 ./test.sh ./gamma ${CMAKE_SOURCE_DIR}/tests/unofficial_part2/)
 
 enable_testing()

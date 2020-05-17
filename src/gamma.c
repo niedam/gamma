@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "gamma.h"
 #include "field.h"
 #include "stringology.h"
@@ -323,32 +324,53 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player) {
 }
 
 
-char* gamma_board(gamma_t *g) {
+char *gamma_board(gamma_t *g) {
     if (ISNULL(g)) {
         return NULL;
     }
-    /** Jeżeli liczba graczy jest większa od 9 to identyfikatory zapisywane
-     * są w blokach o długości ilości cyfr w liczbie graczy.
-     * Przestrzeń niewykorzystywana w ramach bloku wypełniana jest spacjami.
-     */
     int max_len = uint64_length((uint64_t) g->no_players);
     size_t size = max_len * g->width * g->height + g->height + 1;
     char *result = calloc(sizeof(char), size);
     if (ISNULL(result)) {
         return NULL;
     }
-    char *buff = result;
+    if (gamma_board_buffer(g, result, size)) {
+        return result;
+    } else {
+        return NULL;
+    }
+}
+
+
+bool gamma_board_buffer(gamma_t *g, char *buffer, size_t size) {
+    if (ISNULL(g) || ISNULL(buffer)) {
+        return false;
+    }
+    /** Jeżeli liczba graczy jest większa od 9 to identyfikatory zapisywane
+     * są w blokach o długości ilości cyfr w liczbie graczy.
+     * Przestrzeń niewykorzystywana w ramach bloku wypełniana jest spacjami.
+     */
+    size_t current_size = 0;
+    char *current = buffer;
+    uint32_t id_len = uint64_length((uint64_t) g->no_players);
     for (uint32_t i = g->height; i > 0; --i) {
         for (uint32_t j = 0; j < g->width; ++j) {
             field_t *f = gamma_get_field(g, j, i - 1);
-            int k = player_write(buff, size, field_owner(f), max_len);
-            buff += k;
+            int k = player_write(current, size, field_owner(f), id_len);
+            current += k;
+            current_size += k;
         }
-        buff[0] = '\n';
-        buff++;
+        current[0] = '\n';
+        current++;
+        current_size++;
     }
-    result[size - 1] = '\0';
-    return result;
+    buffer[size - 1] = '\0';
+    if (size >= current_size) {
+        return true;
+    } else {
+        return false;
+    }
+
 }
 
 

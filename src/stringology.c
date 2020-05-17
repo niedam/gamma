@@ -67,14 +67,14 @@ bool string_to_uint32(const char *string, uint32_t *result) {
 
 
 bool check_valid_line(const char *line, ssize_t len) {
-    /** Funkcja sprawdza, czy wiersz kończy się znakiem `\n`,
-     * lub czy nie występują w nim nadmiarowe znaki `\0`.
+    /** Funkcja sprawdza, czy wiersz kończy się znakiem `\n`
+     * oraz czy są w nim jedynie poprawne znaki.
      */
     if (ISNULL(line)) {
         return false;
     }
     for (ssize_t i = 0; i < len; i++) {
-        if (line[i] == '\0') {
+        if (!isalnum(line[i]) && !isspace(line[i])) {
             return false;
         }
     }

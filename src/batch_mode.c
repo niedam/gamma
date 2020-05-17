@@ -6,7 +6,6 @@
  * @date 17.05.2020
  */
 
-#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -80,7 +79,7 @@ static const struct batch_command commands[] = {
 };
 
 
-/** Rozpoznanie polecenia w trybie wsadowym.
+/** @brief Rozpoznanie polecenia w trybie wsadowym.
  * @param[in] command           – znak polecenia.
  * @return Wskaźnik na strukturę opisującą procedurę do wykonania.
  */
@@ -95,7 +94,7 @@ static const struct batch_command *batch_command_select(char command) {
 }
 
 
-/** Wykonanie polecenia w trybie wsadowym.
+/** @brief Wykonanie polecenia w trybie wsadowym.
  * @param[in, out] g            – wskaźnik na strukturę silnika gry,
  * @param[in] command           – wskaźnik na strukturę polecenia do wykonania,
  * @param[in] param_size        – liczba przekazanych w poleceniu parametrów,

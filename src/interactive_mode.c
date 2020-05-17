@@ -11,6 +11,7 @@
 #include <termio.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <string.h>
 #include "interactive_mode.h"
 #include "stringology.h"
 #include "gamma.h"
@@ -66,6 +67,16 @@
 /** Kod ANSI escape wyłączający podświetlanie wypisywanego tekstu w terminalu.
  */
 #define DISABLED_HIGHLINE "\033[0m"
+
+
+/** Kod ASCII klawisza `Escape`.
+ */
+#define ESC_KEY 27
+
+
+/** Kod ASCII klawisza `[`.
+ */
+#define BRAC_KEY 91
 
 
 /** @brief Sygnatura służąca do wypisywania planszy przez funkcje z
@@ -144,6 +155,8 @@ ENABLED_HIGHLINE "%.*s" DISABLED_HIGHLINE \
  */
 struct interactive_model {
     gamma_t *game; /**< Wskaźnik na silnik gry. */
+    char *board_buffer; /**< Bufor na wypisywane o planszy informacje. */
+    size_t board_buffer_size; /**< Rozmiar bufora tekstowego. */
     struct termios old_attr; /**< Poprzednie ustawienia terminala. */
     int player_len; /**< Długość identyfikatora gracza. */
     int fields_len; /**< Długość maksymalnej liczby pól. */
@@ -170,6 +183,7 @@ static void interactive_clear() {
  * Funkcje należy wywołać pod koniec działania programu.
  */
 static void finish_program() {
+    free(model.board_buffer);
     printf(SHOW_CURSOR);
     tcsetattr(STDIN_FILENO, TCSANOW, &model.old_attr);
 }
@@ -185,6 +199,11 @@ static void interactive_init(gamma_t *g, struct interactive_model *m) {
         return;
     }
     m->game = g;
+    m->board_buffer = gamma_board(g);
+    if (ISNULL(m->board_buffer)) {
+        exit(EXIT_FAILURE);
+    }
+    m->board_buffer_size = strlen(m->board_buffer) + 1;
     m->current_player = 1;
     m->current_column = (gamma_width(g) - 1) / 2;
     m->current_row = (gamma_height(g) - 1) / 2;
@@ -199,6 +218,7 @@ static void interactive_init(gamma_t *g, struct interactive_model *m) {
     if (tcsetattr(STDIN_FILENO, TCSANOW, &new_attr) < 0) {
         exit(EXIT_FAILURE);
     }
+    atexit(finish_program);
 }
 
 
@@ -246,7 +266,9 @@ static void interactive_view(const struct interactive_model *m) {
     if (ISNULL(m)) {
         return;
     }
-    char *board = gamma_board(m->game);
+    if (!gamma_board_buffer(m->game, m->board_buffer, m->board_buffer_size)) {
+        exit(EXIT_FAILURE);
+    }
     uint64_t busy_fields = gamma_busy_fields(m->game, m->current_player);
     uint64_t free_fields = gamma_free_fields(m->game, m->current_player);
     const char *golden_move = gamma_golden_possible(m->game, m->current_player)
@@ -259,11 +281,10 @@ static void interactive_view(const struct interactive_model *m) {
                                    // każdego wiersza).
     interactive_clear();
     printf(BOARD_SIGNATURE PLAYER_SIGNATURE,
-           BOARD_DESCRIPTION(board, first_chars, m->player_len),
+           BOARD_DESCRIPTION(m->board_buffer, first_chars, m->player_len),
            PLAYER_DESCRIPTION(m->current_player, m->player_len,
                               busy_fields, free_fields,
                               m->fields_len, golden_move));
-    free(board);
 }
 
 
@@ -381,9 +402,10 @@ static void interactive_control(struct interactive_model *m) {
         return;
     }
     int c = getchar();
-    if (c == 27 && (c = getchar()) == 91) {
+    if (c == ESC_KEY && (c = getchar()) == BRAC_KEY) {
         // Wczytano dwa z trzech kodów sygnalizujących możliwość wystąpienia
-        // strzałki.
+        // strzałki w ANSI escape codes. Wczytanie trzeciego i przekazanie
+        // do obsługi.
         c = getchar();
         interactive_arrow_key(m, c);
     } else {
@@ -392,13 +414,13 @@ static void interactive_control(struct interactive_model *m) {
     }
 }
 
+
 void interactive_run(gamma_t *g) {
     if (ISNULL(g)) {
         exit(EXIT_FAILURE);
     }
     struct interactive_model *m = &model;
     interactive_init(g, m);
-    atexit(finish_program);
     interactive_view(m);
     while (true) {
         interactive_control(m);

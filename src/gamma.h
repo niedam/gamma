@@ -12,6 +12,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 
 /** Liczba parametrów funkcji @ref gamma_new.
@@ -124,6 +125,19 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player);
  * planszy lub NULL, jeśli nie udało się zaalokować pamięci.
  */
 char* gamma_board(gamma_t *g);
+
+
+/** @brief Zapisuje napis opisujący stan planszy do bufora.
+ * We wcześniej zaalokowanym buforze umieszcza napis zawierający tekstowy
+ * opis aktualnego stanu planszy.
+ * @param[in] g       – wskaźnik na strukturę przechowującą stan gry,
+ * @param[out] buffer – bufor do którego ma zostać zapisana plansza,
+ * @param[in] size    – rozmiar bufora.
+ * @return Wartość @p true jeżeli udało się umieścić napis w buforze,
+ * wartość @p false w przeciwnym wypadku lub gdy wskaźniki podane jako argumenty
+ * są niepoprawne.
+ */
+bool gamma_board_buffer(gamma_t *g, char *buffer, size_t size);
 
 
 /** @brief Podaje szerokość planszy.

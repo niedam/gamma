@@ -61,6 +61,10 @@ for f in $(find $DIR -name '*.in'); do
   echo
   # Usunięcie plików tymczasowych testu.
   rm $TMP_FILE*
+  if [ $EXIT_CODE -ne 0 ] || [ $ERR -ne 0 ] || [ $OUT -ne 0 ]
+  then
+    exit 1;
+  fi
 done
 
 if [ $ACCEPTED -eq $TESTS ]
