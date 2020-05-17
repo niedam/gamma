@@ -11,7 +11,7 @@
 #include <termio.h>
 #include <unistd.h>
 #include <inttypes.h>
-#include "interactivemode.h"
+#include "interactive_mode.h"
 #include "stringology.h"
 #include "gamma.h"
 
@@ -71,16 +71,18 @@
 /** @brief Sygnatura służąca do wypisywania planszy przez funkcje z
  * rodziny printf. Należy używać razem z @ref BOARD_DESCRIPTION.
  */
-#define BOARD_SIGNATURE DISABLED_WRAPLINE "%.*s" \
-                        ENABLED_HIGHLINE "%.*s" DISABLED_HIGHLINE \
-                        "%s" ENABLED_WRAPLINE
+#define BOARD_SIGNATURE \
+DISABLED_WRAPLINE "%.*s" \
+ENABLED_HIGHLINE "%.*s" DISABLED_HIGHLINE \
+"%s" ENABLED_WRAPLINE
 
 
 /** @brief Sygnatura służąca do wypisywania przez funkcje z rodziny prinrf
  * statystyk dotyczących gracza, którego tura trwa.
  */
-#define PLAYER_SIGNATURE "<PLAYER %*.d | Busy: %*.1"PRIu64" | " \
-                         "Free: %*.1"PRIu64" | Golden move: %3.3s>\n"
+#define PLAYER_SIGNATURE \
+"<PLAYER %*.d | Busy: %*.1"PRIu64" | " \
+"Free: %*.1"PRIu64" | Golden move: %3.3s>\n"
 
 
 /** Kod klawisza: strzałka w górę.
@@ -110,12 +112,12 @@
  * @param[in] id_len            – długość wyróżnionego pola.
  */
 #define BOARD_DESCRIPTION(board, first, id_len)  \
-            /*  PARAMETRY ZWIĄZANE Z WYPISYWANĄ PLANSZĄ. */ \
-            /* Liczba znaków przed zaznaczeniem: */ first, \
-            /* Plansza: */ board, \
-            /* Długość pola na planszy: */ id_len, \
-            /* Wskaźnik na wyróżnione pole: */ board + first, \
-            /* Reszta planszy do wypisania: */ board + first + id_len
+/*  PARAMETRY ZWIĄZANE Z WYPISYWANĄ PLANSZĄ. */ \
+/* Liczba znaków przed zaznaczeniem: */ first, \
+/* Plansza: */ board, \
+/* Długość pola na planszy: */ id_len, \
+/* Wskaźnik na wyróżnione pole: */ board + first, \
+/* Reszta planszy do wypisania: */ board + first + id_len
 
 
 /** @brief Makro ustawia parametry w taki sposób, żeby były zgodne z
@@ -129,13 +131,13 @@
  */
 #define PLAYER_DESCRIPTION(player_id, length_id, busy_fields, \
                            free_fields, length_fields, golden_move) \
-            /* Długość identyfikatorów graczy: */ length_id, \
-            /* Identyfikator aktualnego gracza: */ player_id, \
-            /* Liczba cyfr w max. liczbie pól: */ length_fields, \
-            /* Liczba zajętych pól: */ busy_fields, \
-            /* Liczba cyfr w max. liczbie pól: */ length_fields, \
-            /* Liczba możliwych do zajęcia pól: */ free_fields, \
-            /* Czy dostępny złoty ruch: */ golden_move
+/* Długość identyfikatorów graczy: */ length_id, \
+/* Identyfikator aktualnego gracza: */ player_id, \
+/* Liczba cyfr w max. liczbie pól: */ length_fields, \
+/* Liczba zajętych pól: */ busy_fields, \
+/* Liczba cyfr w max. liczbie pól: */ length_fields, \
+/* Liczba możliwych do zajęcia pól: */ free_fields, \
+/* Czy dostępny złoty ruch: */ golden_move
 
 
 /** Model rozgrywki w trybie interaktywnym.
@@ -217,7 +219,7 @@ static bool interactive_available_player(const struct interactive_model *m) {
 }
 
 
-/** Zmiana położenia kursora na planszy.
+/** @brief Zmiana położenia kursora na planszy.
  * @param[in, out] m            – wskaźnik na model trybu interaktywnego,
  * @param[in] x                 – liczba pól do przesunięcia kursora w poziomie,
  * @param[in] y                 – liczba pól do przesunięcia kursora w pionie.
@@ -318,6 +320,59 @@ static void interactive_move(struct interactive_model *m,
 }
 
 
+/** @brief Obsługa wciśnięcia normalnego klawisza (innego niż strzałka).
+ * @param[in, out] m            – wskaźnik na model trybu interaktywnego,
+ * @param[in] c                 – kod wczytanego klawisza.
+ */
+static void interactive_regular_key(struct interactive_model *m, int c) {
+    if (ISNULL(m)) {
+        return;
+    }
+    switch (c) {
+        case 4:
+            interactive_finish(m);
+            break;
+        case (int) 'G':
+        case (int) 'g':
+            interactive_move(m, gamma_golden_move);
+            break;
+        case (int) ' ':
+            interactive_move(m, gamma_move);
+            break;
+        case (int) 'C':
+        case (int) 'c':
+            interactive_next_player(m);
+            break;
+        default:
+            break;
+    }
+}
+
+
+/** @brief Obsługa wciśnięcia strzałki.
+ * @param[in, out] m            – wskaźnik na model trybu interaktywnego,
+ * @param[in] c                 – kod wczytanego klawisza.
+ */
+static void interactive_arrow_key(struct interactive_model *m, int c) {
+    switch (c) {
+        case RIGHT_KEY:
+            interactive_cursor(m, 1, 0);
+            break;
+        case LEFT_KEY:
+            interactive_cursor(m, -1, 0);
+            break;
+        case UP_KEY:
+            interactive_cursor(m, 0, -1);
+            break;
+        case DOWN_KEY:
+            interactive_cursor(m, 0, 1);
+            break;
+        default:
+            interactive_regular_key(m, c);
+    }
+}
+
+
 /** @brief Sterowanie w trybie interaktywnym.
  * @param[in, out] m            – wskaźnik na model trybu interaktywnego.
  */
@@ -327,44 +382,13 @@ static void interactive_control(struct interactive_model *m) {
     }
     int c = getchar();
     if (c == 27 && (c = getchar()) == 91) {
-        // Wciśnięcie strzałek.
+        // Wczytano dwa z trzech kodów sygnalizujących możliwość wystąpienia
+        // strzałki.
         c = getchar();
-        switch (c) {
-            case RIGHT_KEY:
-                interactive_cursor(m, 1, 0);
-                break;
-            case LEFT_KEY:
-                interactive_cursor(m, -1, 0);
-                break;
-            case UP_KEY:
-                interactive_cursor(m, 0, -1);
-                break;
-            case DOWN_KEY:
-                interactive_cursor(m, 0, 1);
-                break;
-            default:
-                break;
-        }
+        interactive_arrow_key(m, c);
     } else {
         // Wciśnięcie normalnych znaków.
-        switch (c) {
-            case 4:
-                interactive_finish(m);
-                break;
-            case (int) 'G':
-            case (int) 'g':
-                interactive_move(m, gamma_golden_move);
-                break;
-            case (int) ' ':
-                interactive_move(m, gamma_move);
-                break;
-            case (int) 'C':
-            case (int) 'c':
-                interactive_next_player(m);
-                break;
-            default:
-                break;
-        }
+        interactive_regular_key(m, c);
     }
 }
 

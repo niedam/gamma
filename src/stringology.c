@@ -5,10 +5,10 @@
  * @date 17.05.2020
  */
 
+#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <values.h>
 #include <errno.h>
@@ -19,16 +19,6 @@
  * @param[in] ptr           – sprawdzany wskaźnik.
  */
 #define ISNULL(ptr) (ptr == NULL)
-
-
-/** Stała reprezentująca ciąg białych znaków.
- */
-#define WHITE_SPACES " \t\v\f\r\n"
-
-
-/** Stała reprezentująca ciąg cyfr.
- */
-#define NUMBER_CHAR "0123456789"
 
 
 int uint64_length(uint64_t number)  {
@@ -58,27 +48,14 @@ int player_write(char *buff, int n, uint32_t player, uint32_t num_len) {
 }
 
 
-bool char_check(char c, const char *char_set) {
-    if (ISNULL(char_set)) {
-        return false;
-    }
-    int i = 0;
-    while (char_set[i] != '\0') {
-        if (char_set[i] == c) {
-            return true;
-        }
-        i++;
-    }
-    return false;
-}
-
-
 bool string_to_uint32(const char *string, uint32_t *result) {
     if (ISNULL(string) || ISNULL(result)) {
         return false;
     }
-    if (strspn(string, NUMBER_CHAR) != strlen(string)) {
-        return false;
+    for (int i = 0; string[i] != '\0'; ++i) {
+        if (!isdigit(string[i])) {
+            return false;
+        }
     }
     unsigned long conversion = strtoul(string, NULL, 10);
     if ((conversion == ULONG_MAX && errno == ERANGE) || conversion > UINT32_MAX) {
@@ -90,23 +67,27 @@ bool string_to_uint32(const char *string, uint32_t *result) {
 
 
 bool check_valid_line(const char *line, ssize_t len) {
+    /** Funkcja sprawdza, czy wiersz kończy się znakiem `\n`,
+     * lub czy nie występują w nim nadmiarowe znaki `\0`.
+     */
     if (ISNULL(line)) {
         return false;
     }
-    /** Funkcja sprawdza, czy wiersz kończy się znakiem końca linii,
-     * oraz czy nie występują w nim znaki `\0` przed końcem wiersza.
-     */
     for (ssize_t i = 0; i < len; i++) {
         if (line[i] == '\0') {
             return false;
         }
     }
-    return line[len - 1] == '\n';
+    if (line[len - 1] == '\n') {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 
 bool check_blank_line(const char *line) {
-    return !ISNULL(line) && strcmp(line, "\n") == 0;
+    return !ISNULL(line) && line[0] == '\n';
 }
 
 

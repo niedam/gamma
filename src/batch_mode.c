@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "gamma.h"
-#include "batchmode.h"
+#include "batch_mode.h"
 #include "input_interface.h"
 
 

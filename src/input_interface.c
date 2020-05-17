@@ -90,7 +90,7 @@ int parse_line(char *cmd, int params_size, uint32_t params[params_size]) {
         return PARSE_END;
     }
     if (!check_valid_line(global.buffer, global.line_length)) {
-        // Linia niezakończona `\n`.
+        // Wiersz niepoprawny.
         report_error();
         return PARSE_ERROR;
     }

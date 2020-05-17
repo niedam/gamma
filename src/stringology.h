@@ -32,16 +32,6 @@ int uint64_length(uint64_t number);
 int player_write(char *buff, int n, uint32_t player, uint32_t num_len);
 
 
-/** @brief Sprawdzenie obecności znaku w słowie.
- * Funkcja sprawdza, czy znak @p c należy do słowa @p char_set.
- * @param[in] c             – sprawdzany znak,
- * @param[in] char_set      – słowo do przeszukania.
- * @return Wartość @p true jeżeli @p c należy do @p char_set lub @p w przeciwnym
- * wypadku oraz gdy wskaźnik na słowo jest niepoprawny.
- */
-bool char_check(char c, const char *char_set);
-
-
 /** @brief Interpretuje ciąg znaków jako liczbę.
  * @param[in] string        – interpretowane słowo,
  * @param[out] result       – wskaźnik do miejsca w pamięci, w którym ma zostać

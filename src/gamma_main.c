@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include "gamma.h"
 #include "input_interface.h"
-#include "batchmode.h"
-#include "interactivemode.h"
+#include "batch_mode.h"
+#include "interactive_mode.h"
 
 
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
