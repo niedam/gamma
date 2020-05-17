@@ -90,14 +90,14 @@ int main() {
     assert(gamma_free_fields(g, 1) == 8);
     assert(gamma_busy_fields(g, 2) == 4);
     assert(gamma_free_fields(g, 2) == 10);
-
+    /* Test board. */
     char *p = gamma_board(g);
     assert(p);
     printf("%s", p);
     assert(strcmp(p, board) == 0);
     free(p);
     gamma_delete(g);
-
+    /* Testy dla więcej niż 9 graczy. */
     gamma_t *g_10 = gamma_new(5, 5, 12, 14);
     assert(gamma_move(g_10, 11, 0, 0));
     assert(gamma_move(g_10, 11, 1, 0));
@@ -107,6 +107,5 @@ int main() {
     printf("%s", p2);
     free(p2);
     gamma_delete(g_10);
-
     return 0;
 }

@@ -370,7 +370,6 @@ bool gamma_board_buffer(gamma_t *g, char *buffer, size_t size) {
     } else {
         return false;
     }
-
 }
 
 

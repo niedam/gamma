@@ -271,7 +271,6 @@ void field_rebuild_areas_around(field_t *field, uint32_t player_id) {
         field->adjoining[i]->visited = true;
         field->adjoining[i]->next_node = queue;
         queue = field->adjoining[i];
-
         while (!ISNULL(queue)) {
             field_t *curr = queue;
             queue = queue->next_node;

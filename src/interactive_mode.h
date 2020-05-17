@@ -21,4 +21,3 @@ void interactive_run(gamma_t *g);
 
 
 #endif /* GAMMA_INTERACTIVEMODE_H */
-
