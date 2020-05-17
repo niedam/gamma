@@ -34,9 +34,6 @@ set(SOURCE_FILES
         src/interactive_mode.c
         src/interactive_mode.h)
 
-# Wskazujemy plik zawierający funkcję main.
-set(TEST_FILE src/gamma_test.c)
-
 add_executable(gamma src/gamma_main.c ${SOURCE_FILES})
 
 # Dodajemy obsługę Doxygena: sprawdzamy, czy jest zainstalowany i jeśli tak to:
