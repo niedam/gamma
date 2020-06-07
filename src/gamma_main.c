@@ -2,19 +2,14 @@
  * Program obsługujący rozgrywkę w grę Gamma.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @date 17.05.2020
+ * @date 12.06.2020
  */
 #include <stdlib.h>
 #include "gamma.h"
 #include "input_interface.h"
 #include "batch_mode.h"
 #include "interactive_mode.h"
-
-
-/** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr           – sprawdzany wskaźnik.
- */
-#define ISNULL(ptr) (ptr == NULL)
+#include "isnull.h"
 
 
 /** Silnik gry Gamma działający w ramach programu.

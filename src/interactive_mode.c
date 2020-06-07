@@ -19,12 +19,7 @@
 #include "interactive_mode.h"
 #include "stringology.h"
 #include "gamma.h"
-
-
-/** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr           – sprawdzany wskaźnik.
- */
-#define ISNULL(ptr) (ptr == NULL)
+#include "isnull.h"
 
 
 /** Czas trwania jednej klatki w animacji robienia ruchu w nanosekundach.

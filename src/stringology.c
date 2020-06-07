@@ -2,7 +2,7 @@
  * Implementacja funkcji do przetwarzania i obsługi ciągów znaków.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @date 17.05.2020
+ * @date 12.06.2020
  */
 
 #include <ctype.h>
@@ -13,12 +13,7 @@
 #include <values.h>
 #include <errno.h>
 #include "stringology.h"
-
-
-/** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr           – sprawdzany wskaźnik.
- */
-#define ISNULL(ptr) (ptr == NULL)
+#include "isnull.h"
 
 
 int uint64_length(uint64_t number)  {

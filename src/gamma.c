@@ -6,16 +6,10 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
 #include "gamma.h"
 #include "field.h"
 #include "stringology.h"
-
-
-/** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
- * @param[in] ptr           – sprawdzany wskaźnik.
- */
-#define ISNULL(ptr) (ptr == NULL)
+#include "isnull.h"
 
 
 /** Struktura reprezentująca informacje na temat gracza gry Gamma.
