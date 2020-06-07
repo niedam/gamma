@@ -3,23 +3,33 @@
  * silnika gry Gamma.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @date 17.05.2020
+ * @date 12.06.2020
  */
 
+/** Makro umożliwiające używanie funkcji `nanoslepp()`.
+ */
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdio.h>
 #include <termio.h>
 #include <unistd.h>
 #include <inttypes.h>
 #include <string.h>
+#include <time.h>
 #include "interactive_mode.h"
 #include "stringology.h"
 #include "gamma.h"
+
 
 /** @brief Sprawdzenie czy wskaźnik jest `NULL`-em.
  * @param[in] ptr           – sprawdzany wskaźnik.
  */
 #define ISNULL(ptr) (ptr == NULL)
+
+
+/** Czas trwania jednej klatki w animacji robienia ruchu w nanosekundach.
+ */
+#define ANIMATION_DURATION 80000000L
 
 
 /** Stały ciąg znaków reprezentujący pozytywną odpowiedź
@@ -34,61 +44,88 @@
 #define ANSWER_NO "NO"
 
 
-/** Kod ANSI escape resetujący terminal.
- */
-#define CLEAR_CONSOLE "\033c"
-
-
-/** Kod ANSI escape pokazujący domyślny kursor terminala.
- */
-#define SHOW_CURSOR "\033[?25h"
-
-
-/** Kod ANSI escape ukrywający domyślny kursor terminala.
- */
-#define HIDE_CURSOR "\033[?25l"
-
-
-/** Kod ANSI escape zapobiegający zawijaniu wierszy w terminalu.
- */
-#define DISABLED_WRAPLINE "\033[?7l"
-
-
-/** Kod ANSI escape przywracający zawijanie wierszy w terminalu.
- */
-#define ENABLED_WRAPLINE "\033[?7h"
-
-
-/** Kod ANSI escape włączający podświetlanie wypisywanego tekstu w terminalu.
- */
-#define ENABLED_HIGHLINE "\033[7m"
-
-
-/** Kod ANSI escape wyłączający podświetlanie wypisywanego tekstu w terminalu.
- */
-#define DISABLED_HIGHLINE "\033[0m"
-
-
 /** Kod ASCII klawisza `Escape`.
  */
-#define ESC_KEY 27
+#define ESC_KEY '\e'
 
 
 /** Kod ASCII klawisza `[`.
  */
-#define BRAC_KEY 91
+#define BRAC_KEY '['
 
 
-/** @brief Sygnatura służąca do wypisywania planszy przez funkcje z
- * rodziny printf. Należy używać razem z @ref BOARD_DESCRIPTION.
+/** Kod ANSI escape resetujący terminal.
  */
-#define BOARD_SIGNATURE \
-DISABLED_WRAPLINE "%.*s" \
-ENABLED_HIGHLINE "%.*s" DISABLED_HIGHLINE \
-"%s" ENABLED_WRAPLINE
+#define CLEAR_CONSOLE "\ec"
 
 
-/** @brief Sygnatura służąca do wypisywania przez funkcje z rodziny prinrf
+/** Kod ANSI escape pokazujący domyślny kursor terminala.
+ */
+#define SHOW_CURSOR "\e[?25h"
+
+
+/** Kod ANSI escape ukrywający domyślny kursor terminala.
+ */
+#define HIDE_CURSOR "\e[?25l"
+
+
+/** Kod ANSI escape zapobiegający zawijaniu wierszy w terminalu.
+ */
+#define DISABLED_WRAPLINE "\e[?7l"
+
+
+/** Kod ANSI escape przywracający zawijanie wierszy w terminalu.
+ */
+#define ENABLED_WRAPLINE "\e[?7h"
+
+
+/** Kod ANSI escape do wypisywania aktualnie wskazywanego pola.
+ */
+#define HIGHLINE_COLOR "\e[41m"
+
+
+/** Kod ANSI escape do wypisywania pól parzystych.
+ */
+#define EVEN_COLOR "\e[104m"
+
+
+/** Kod ANSI escape do wypisywania pól nieparzystych.
+ */
+#define ODD_COLOR "\e[105m"
+
+
+/** Kod ANSI escape zaznaczający pole na złoto.
+ */
+#define GOLD_COLOR "\e[103m"
+
+
+/** Kod ANSI escape zaznaczający pole na ciemno złoto.
+ */
+#define GOLD_COLOR_DARK "\e[43m"
+
+
+/** Kod ANSI escape zaznaczający pole na zielono.
+ */
+#define GREEN_COLOR "\e[102m"
+
+
+/** Kod ANSI escape zaznaczający pole na ciemno zielono.
+ */
+#define GREEN_COLOR_DARK "\e[42m"
+
+
+/** Kod ANSI escape wyłączający podświetlanie wypisywanego tekstu w terminalu.
+ */
+#define DISABLE_EFFECTS "\e[0m"
+
+
+/** @brief Sygnatura służąca do wypisywania przez funkcje z rodziny printf
+ * statystyk dotyczących gracza, którego tura trwa.
+ */
+#define BOARD_SIGNATURE DISABLED_WRAPLINE "%s" ENABLED_WRAPLINE
+
+
+/** @brief Sygnatura służąca do wypisywania przez funkcje z rodziny printf
  * statystyk dotyczących gracza, którego tura trwa.
  */
 #define PLAYER_SIGNATURE \
@@ -98,37 +135,22 @@ ENABLED_HIGHLINE "%.*s" DISABLED_HIGHLINE \
 
 /** Kod klawisza: strzałka w górę.
  */
-#define UP_KEY 65
+#define UP_KEY 'A'
 
 
 /** Kod klawisza: strzałka w dół.
  */
-#define DOWN_KEY 66
+#define DOWN_KEY 'B'
 
 
 /** Kod klawisza: strzałka w prawo.
  */
-#define RIGHT_KEY 67
+#define RIGHT_KEY 'C'
 
 
 /** Kod klawisza: strzałka w lewo.
  */
-#define LEFT_KEY 68
-
-
-/** @brief Makro ustawia parametry w taki sposób, żeby były zgodne z
- * @ref BOARD_SIGNATURE
- * @param[in] board             – ciąg znaków reprezentujący planszę,
- * @param[in] first             – liczba znaków przed wyróżnionym polem,
- * @param[in] id_len            – długość wyróżnionego pola.
- */
-#define BOARD_DESCRIPTION(board, first, id_len)  \
-/*  PARAMETRY ZWIĄZANE Z WYPISYWANĄ PLANSZĄ. */ \
-/* Liczba znaków przed zaznaczeniem: */ first, \
-/* Plansza: */ board, \
-/* Długość pola na planszy: */ id_len, \
-/* Wskaźnik na wyróżnione pole: */ board + first, \
-/* Reszta planszy do wypisania: */ board + first + id_len
+#define LEFT_KEY 'D'
 
 
 /** @brief Makro ustawia parametry w taki sposób, żeby były zgodne z
@@ -156,7 +178,9 @@ ENABLED_HIGHLINE "%.*s" DISABLED_HIGHLINE \
 struct interactive_model {
     gamma_t *game; /**< Wskaźnik na silnik gry. */
     char *board_buffer; /**< Bufor na wypisywane o planszy informacje. */
+    char *result_buffer; /**< Bufor na planszę z kolorowymi efektami. */
     size_t board_buffer_size; /**< Rozmiar bufora tekstowego. */
+    size_t result_buffer_size; /**< Rozmiar bufora planszy z kolorami. */
     struct termios old_attr; /**< Poprzednie ustawienia terminala. */
     int player_len; /**< Długość identyfikatora gracza. */
     int fields_len; /**< Długość maksymalnej liczby pól. */
@@ -184,6 +208,7 @@ static void interactive_clear() {
  */
 static void finish_program() {
     free(model.board_buffer);
+    free(model.result_buffer);
     printf(SHOW_CURSOR);
     tcsetattr(STDIN_FILENO, TCSANOW, &model.old_attr);
 }
@@ -204,6 +229,12 @@ static void interactive_init(gamma_t *g, struct interactive_model *m) {
         exit(EXIT_FAILURE);
     }
     m->board_buffer_size = strlen(m->board_buffer) + 1;
+    m->result_buffer_size = m->board_buffer_size + (((sizeof(EVEN_COLOR) - 1) *
+            (gamma_width(g) + 1)) * (gamma_height(g)));
+    m->result_buffer = calloc(m->result_buffer_size, sizeof(char));
+    if (ISNULL(m->result_buffer)) {
+        exit(EXIT_FAILURE);
+    }
     m->current_player = 1;
     m->current_column = (gamma_width(g) - 1) / 2;
     m->current_row = (gamma_height(g) - 1) / 2;
@@ -259,11 +290,50 @@ static void interactive_cursor(struct interactive_model *m, int x, int y) {
 }
 
 
-/** @brief Wypisanie planszy do terminala na podstawie modelu.
- * @param[in] m                 – wskaźnik na model trybu interaktywnego.
+/** @brief Wpisanie planszy do bufora z dodaniem efektów wizualnych (kolorowanie
+ * pól, zaznaczanie wskazywanego pola).
+ * @param[in, out] m            – wskaźnik na model trybu interaktywnego,
+ * @param[in] highlight         – kod ANSI escape koloru, którym ma być
+ *                                w którym ma być wskazywane przez gracza pole.
  */
-static void interactive_view(const struct interactive_model *m) {
+static void interactive_compose_board(struct interactive_model *m,
+                                      const char *highlight) {
     if (ISNULL(m)) {
+        return;
+    }
+    char *current_field = m->board_buffer;
+    char *current_buffer = m->result_buffer;
+    size_t rest = m->result_buffer_size;
+    for (uint64_t i = 0; i < gamma_height(m->game); ++i) {
+        for (uint64_t j = 0; j < gamma_width(m->game); ++j) {
+            int l;
+            if (m->current_column == j && m->current_row == i) {
+                l = snprintf(current_buffer, rest, "%s%.*s", highlight,
+                             m->player_len, current_field);
+            } else {
+                const char *effect = (i + j) % 2 == 0 ? EVEN_COLOR : ODD_COLOR;
+                l = snprintf(current_buffer, rest, "%s%.*s", effect,
+                             m->player_len, current_field);
+            }
+            current_field += m->player_len;
+            current_buffer += l;
+            rest -= l;
+        }
+        int l = snprintf(current_buffer, rest, DISABLE_EFFECTS "\n");
+        rest -= l;
+        current_field++;
+        current_buffer += l;
+    }
+}
+
+
+/** @brief Wypisanie planszy do terminala na podstawie modelu.
+ * @param[in] m                 – wskaźnik na model trybu interaktywnego,
+ * @param[in] effect            – kod ANSI escape koloru, w jakim jest pole
+ *                                wskazywane przez gracza.
+ */
+static void interactive_view(struct interactive_model *m, const char *effect) {
+    if (ISNULL(m) || ISNULL(effect)) {
         return;
     }
     if (!gamma_board_buffer(m->game, m->board_buffer, m->board_buffer_size)) {
@@ -273,15 +343,9 @@ static void interactive_view(const struct interactive_model *m) {
     uint64_t free_fields = gamma_free_fields(m->game, m->current_player);
     const char *golden_move = gamma_golden_possible(m->game, m->current_player)
                               ? ANSWER_YES : ANSWER_NO;
-    // Ile początkowych znaków planszy wypisać przed wyróżnieniem
-    // aktualnie zaznaczonego kursorem pola:
-    uint32_t first_chars = (gamma_width(m->game)) * m->current_row + m->current_column;
-    first_chars *= uint64_length((uint64_t) gamma_players(m->game));
-    first_chars += m->current_row; // Doliczamy endline'y (1 char na końcu
-                                   // każdego wiersza).
+    interactive_compose_board(m, effect);
     interactive_clear();
-    printf(BOARD_SIGNATURE PLAYER_SIGNATURE,
-           BOARD_DESCRIPTION(m->board_buffer, first_chars, m->player_len),
+    printf(BOARD_SIGNATURE PLAYER_SIGNATURE, m->result_buffer,
            PLAYER_DESCRIPTION(m->current_player, m->player_len,
                               busy_fields, free_fields,
                               m->fields_len, golden_move));
@@ -297,7 +361,7 @@ static void interactive_finish(struct interactive_model *m) {
     }
     char *board = gamma_board(m->game);
     interactive_clear();
-    printf(BOARD_SIGNATURE, BOARD_DESCRIPTION(board, 0, 0));
+    printf("%s", m->board_buffer);
     uint32_t players = gamma_players(m->game);
     for (uint32_t p = 1; p <= players; ++p) {
         printf("PLAYER %*.1d %"PRIu64"\n", m->player_len, p,
@@ -325,17 +389,42 @@ static void interactive_next_player(struct interactive_model *m) {
 }
 
 
+/** @brief Wyświetlenie planszy z animacją zmieniania koloru pola wskazywanego
+ * przez gracza.
+ * @param[in] m                 – wskaźnik na model trybu interaktywnego,
+ * @param[in] effect1           – kod ANSI escape pierwszego koloru,
+ * @param[in] effect2           – kod ANSI escape drugiego koloru.
+ */
+static void interactive_animation(struct interactive_model *m,
+                                  const char *effect1, const char *effect2) {
+    struct timespec tim, tim2;
+    tim.tv_sec = 0;
+    tim.tv_nsec = ANIMATION_DURATION;
+    const char *effects[] = { effect1, effect2, effect1 };
+    for (size_t i = 0; i < sizeof(effects) / sizeof(effects[0]); ++i) {
+        interactive_view(m, effects[i]);
+        if (nanosleep(&tim, &tim2) < 0) {
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+
 /** @brief Wykonanie ruchu przy użyciu silnika gry Gamma.
  * @param[in, out] m            – wskaźnik na model trybu interaktywnego,
- * @param[in] fun_move          – funkcja do wykonania na silniku gry Gamma.
+ * @param[in] fun_move          – funkcja do wykonania na silniku gry Gamma,
+ * @param[in] effect1           – pierwszy kolor animacji towarzyszącej ruchowi,
+ * @param[in] effect2           – drugi kolor animacji towarzyszącej ruchowi.
  */
 static void interactive_move(struct interactive_model *m,
-                             bool (*fun_move)(gamma_t *, uint32_t, uint32_t, uint32_t)) {
+                             bool (*fun_move)(gamma_t *, uint32_t, uint32_t, uint32_t),
+                             const char *effect1, const char *effect2) {
     if (ISNULL(fun_move) || ISNULL(m)) {
         return;
     }
     if (fun_move(m->game, m->current_player,
                  m->current_column, gamma_height(m->game) - 1 - m->current_row)) {
+        interactive_animation(m, effect1, effect2);
         interactive_next_player(m);
     }
 }
@@ -355,10 +444,10 @@ static void interactive_regular_key(struct interactive_model *m, int c) {
             break;
         case (int) 'G':
         case (int) 'g':
-            interactive_move(m, gamma_golden_move);
+            interactive_move(m, gamma_golden_move, GOLD_COLOR, GOLD_COLOR_DARK);
             break;
         case (int) ' ':
-            interactive_move(m, gamma_move);
+            interactive_move(m, gamma_move, GREEN_COLOR, GREEN_COLOR_DARK);
             break;
         case (int) 'C':
         case (int) 'c':
@@ -421,9 +510,9 @@ void interactive_run(gamma_t *g) {
     }
     struct interactive_model *m = &model;
     interactive_init(g, m);
-    interactive_view(m);
+    interactive_view(m, HIGHLINE_COLOR);
     while (true) {
         interactive_control(m);
-        interactive_view(m);
+        interactive_view(m, HIGHLINE_COLOR);
     }
 }

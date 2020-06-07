@@ -30,27 +30,6 @@ static void finish_program() {
 }
 
 
-/** Sprawdzenie poprawności parametrów gamma_new.
- * Funkcja sprawdza, czy podane na wejściu liczby są poprawnymi argumentami
- * funkcji @ref gamma_new, czyli czy są niezerowe.
- * @param[in] params_size   – długość tablicy parametrów,
- * @param[in] params        – tablica liczb do sprawdzenia.
- * @return Wartość @p true, jeżeli parametry są poprawne, @p false w
- * przeciwnym wypadku.
- */
-static bool check_gamma_new(int params_size, const uint32_t params[params_size]) {
-    if (ISNULL(params)) {
-        return false;
-    }
-    for (int i = 0; i < params_size; i++) {
-        if (params[i] == 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-
 /** Główna funkcja programu Gamma. */
 int main() {
     atexit(finish_program);
@@ -63,12 +42,13 @@ int main() {
             // Koniec standardowego wejścia.
             exit(EXIT_SUCCESS);
         } else if (resp == GAMMA_NEW_PARAMS_SIZE && (mode == 'I' || mode == 'B')) {
-            if (check_gamma_new(GAMMA_NEW_PARAMS_SIZE, params)) {
+            engine = gamma_new(params[0], params[1], params[2], params[3]);
+            if (!ISNULL(engine)) {
                 // Deklaracja planszy jest poprawna.
                 report_ok();
                 break;
             } else {
-                // Niepoprawne parametry planszy (wartości zero).
+                // Niepoprawne parametry planszy.
                 report_error();
             }
         } else if (resp >= 0) {
@@ -76,8 +56,6 @@ int main() {
             report_error();
         }
     }
-    engine = gamma_new(params[0], params[1],
-                            params[2], params[3]);
     switch (mode) {
         case 'B':
             // Przejście do trybu wsadowego.
