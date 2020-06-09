@@ -4,7 +4,7 @@
  * @author Marcin Peczarski <marpe@mimuw.edu.pl>,
  *         Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
  * @copyright Uniwersytet Warszawski
- * @date 17.05.2020
+ * @date 12.06.2020
  */
 
 #ifndef GAMMA_H
@@ -105,13 +105,13 @@ uint64_t gamma_free_fields(gamma_t *g, uint32_t player);
 
 /** @brief Sprawdza, czy gracz może wykonać złoty ruch.
  * Sprawdza, czy gracz @p player jeszcze nie wykonał w tej rozgrywce złotego
- * ruchu i jest przynajmniej jedno pole zajęte przez innego gracza.
+ * ruchu i jest przynajmniej jedno pole które może zabrać innemu graczowi.
  * @param[in] g       – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] player  – numer gracza, liczba dodatnia niewiększa od wartości
  *                      @p players z funkcji @ref gamma_new.
  * @return Wartość @p true, jeśli gracz jeszcze nie wykonał w tej rozgrywce
- * złotego ruchu i jest przynajmniej jedno pole zajęte przez innego gracza,
- * a @p false w przeciwnym przypadku.
+ * złotego ruchu i jest przynajmniej jedno pole które może zabrać innemu
+ * graczowi, a @p false w przeciwnym przypadku.
  */
 bool gamma_golden_possible(gamma_t *g, uint32_t player);
 

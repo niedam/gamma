@@ -13,7 +13,7 @@ set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
 set(CMAKE_C_COMPILER_VERSION 11)
 
 # Ustawiamy wspólne opcje kompilowania dla wszystkich wariantów projektu.
-set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
+set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra -O2")
 # Domyślne opcje dla wariantów Release i Debug są sensowne.
 # Jeśli to konieczne, ustawiamy tu inne.
 # set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
@@ -32,7 +32,8 @@ set(SOURCE_FILES
         src/input_interface.c
         src/input_interface.h
         src/interactive_mode.c
-        src/interactive_mode.h src/isnull.h)
+        src/interactive_mode.h
+        src/isnull.h)
 
 add_executable(gamma src/gamma_main.c ${SOURCE_FILES})
 
@@ -49,3 +50,12 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
     )
 endif (DOXYGEN_FOUND)
+
+
+# Dodajemy obsługę testów jednostkowych z użyciem biblioteki CMocka.
+find_library(CMOCKA cmocka)
+if (CMOCKA)
+    add_executable(test EXCLUDE_FROM_ALL src/gamma_test.c ${SOURCE_FILES})
+    set_target_properties(test PROPERTIES OUTPUT_NAME gamma_test)
+    target_link_libraries(test ${CMOCKA})
+endif (CMOCKA)

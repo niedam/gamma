@@ -2,7 +2,7 @@
  * Implementacja struktury i metod klasy przechowującej stan gry Gamma.
  *
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
- * @date 17.05.2020
+ * @date 12.06.2020
  */
 
 #include <stdlib.h>
@@ -40,7 +40,7 @@ struct gamma {
 /** @brief Sprawdzenie poprawności identyfikatora gracza.
  * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] player        – identyfikator gracza.
- * @return Wartość @p true, jeżeli @param player jest liczbą dodatnią niewiększą
+ * @return Wartość @p true, jeżeli @p player jest liczbą dodatnią niewiększą
  * od liczby graczy w grze reprezentowanej przez @p g, w przeciwnym wypadku
  * @p false lub gdy @p g jest `NULL`-em.
  */
@@ -182,6 +182,38 @@ static void gamma_release_field(gamma_t *g, field_t *field) {
 }
 
 
+/** @brief Sprawdzenie czy gracz może wykonać na polu złoty ruch.
+ * W wyniku funkcji zajęte przez pewnego gracza pole staje się wolne.
+ * @param[in] g             – wskaźnik na strukturę przechowującą stan gry,
+ * @param[in] player        – wskaźnik do informacji związanych z graczem,
+ * @param[in] field         – wskaźnik do informacji związanych polem.
+ */
+static bool gamma_golden_move_possible(gamma_t *g, player_t *player,
+                                       field_t *field) {
+    if (ISNULL(player) || ISNULL(field)) {
+        return false;
+    }
+    if (field_owner(field) == player->id || field_owner(field) == 0) {
+        return false;
+    }
+    if (player->areas == g->areas_limit
+        && field_count_adjoining_areas(field, player->id) == 0) {
+        /* Gracz osiągnął limit obszarów i nie powiększy żadnego istniejącego.
+        */
+        return false;
+    }
+    player_t *owner = gamma_get_player(g, field_owner(field));
+    uint32_t areas_after_breaking = field_count_adjoining_areas_after_breaking(field);
+    if (g->areas_limit - owner->areas < ADJOINING_FIELDS && g->areas_limit <
+                                                            areas_after_breaking - 1 + owner->areas) {
+        /* Zdjęcie pionka innemu graczu stworzyłoby mu obszary ponad limit.
+         */
+        return false;
+    }
+    return true;
+}
+
+
 gamma_t* gamma_new(uint32_t width, uint32_t height,
                    uint32_t players, uint32_t areas) {
     if (width == 0 || height == 0 || players == 0 || areas == 0) {
@@ -263,27 +295,14 @@ bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
          */
         return false;
     }
-    if (field_owner(field) == player || field_owner(field) == 0) {
+    if (gamma_golden_move_possible(g, player_link, field)) {
+        gamma_release_field(g, field);
+        gamma_take_field(g, player_link, field);
+        player_link->golden_move_done = true;
+        return true;
+    } else {
         return false;
     }
-    if (player_link->areas == g->areas_limit
-        && field_count_adjoining_areas(field, player) == 0) {
-        /* Gracz osiągnął limit obszarów i nie powiększy żadnego istniejącego.
-        */
-        return false;
-    }
-    player_t *owner = gamma_get_player(g, field_owner(field));
-    uint32_t areas_after_breaking = field_count_adjoining_areas_after_breaking(field);
-    if (g->areas_limit - owner->areas < ADJOINING_FIELDS && g->areas_limit <
-                                    areas_after_breaking - 1 + owner->areas) {
-        /* Zdjęcie pionka innemu graczu stworzyłoby mu obszary ponad limit.
-         */
-        return false;
-    }
-    gamma_release_field(g, field);
-    gamma_take_field(g, player_link, field);
-    player_link->golden_move_done = true;
-    return true;
 }
 
 
@@ -313,8 +332,22 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player) {
     if (ISNULL(g) || ISNULL(p_info)) {
         return false;
     }
-    return !p_info->golden_move_done
-            && g->ocupied_fields - p_info->occupied_fields > 0;
+    if (p_info->golden_move_done
+         || g->ocupied_fields - p_info->occupied_fields == 0) {
+        return false;
+    }
+    for (uint32_t w = 0; w < g->width; ++w) {
+        for (uint32_t h = 0; h < g->height; ++h) {
+            field_t *f = gamma_get_field(g, w, h);
+            if (ISNULL(f)) {
+                return false;
+            }
+            if (gamma_golden_move_possible(g, p_info, f)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 

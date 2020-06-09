@@ -109,6 +109,11 @@
 #define GREEN_COLOR_DARK "\e[42m"
 
 
+/** Kod ANSI escape zmieniający kolor tekstu na żółty.
+ */
+#define YELLOW_COLOR_TEXT "\e[93m"
+
+
 /** Kod ANSI escape wyłączający podświetlanie wypisywanego tekstu w terminalu.
  */
 #define DISABLE_EFFECTS "\e[0m"
@@ -124,8 +129,10 @@
  * statystyk dotyczących gracza, którego tura trwa.
  */
 #define PLAYER_SIGNATURE \
-"<PLAYER %*.d | Busy: %*.1"PRIu64" | " \
-"Free: %*.1"PRIu64" | Golden move: %3.3s>\n"
+">>> PLAYER %*.d\n" \
+" | Busy: %*.1"PRIu64"\n" \
+" | Free: %*.1"PRIu64"\n" \
+" | Golden move: %s\n"
 
 
 /** Kod klawisza: strzałka w górę.
@@ -290,10 +297,12 @@ static void interactive_cursor(struct interactive_model *m, int x, int y) {
  * @param[in, out] m            – wskaźnik na model trybu interaktywnego,
  * @param[in] highlight         – kod ANSI escape koloru, którym ma być
  *                                w którym ma być wskazywane przez gracza pole.
+ *                                Jeżeli parametr ma wartość `NULL` to żadne
+ *                                pole nie zostanie wyróżnione.
  */
 static void interactive_compose_board(struct interactive_model *m,
                                       const char *highlight) {
-    if (ISNULL(m)) {
+    if (ISNULL(m)) { // Sprawdzenie czy highlight jest `NULL` następuje później.
         return;
     }
     char *current_field = m->board_buffer;
@@ -302,7 +311,8 @@ static void interactive_compose_board(struct interactive_model *m,
     for (uint64_t i = 0; i < gamma_height(m->game); ++i) {
         for (uint64_t j = 0; j < gamma_width(m->game); ++j) {
             int l;
-            if (m->current_column == j && m->current_row == i) {
+            if (!ISNULL(highlight) && m->current_column == j
+                 && m->current_row == i) {
                 l = snprintf(current_buffer, rest, "%s%.*s", highlight,
                              m->player_len, current_field);
             } else {
@@ -337,7 +347,8 @@ static void interactive_view(struct interactive_model *m, const char *effect) {
     uint64_t busy_fields = gamma_busy_fields(m->game, m->current_player);
     uint64_t free_fields = gamma_free_fields(m->game, m->current_player);
     const char *golden_move = gamma_golden_possible(m->game, m->current_player)
-                              ? ANSWER_YES : ANSWER_NO;
+                              ? YELLOW_COLOR_TEXT ANSWER_YES DISABLE_EFFECTS
+                              : ANSWER_NO;
     interactive_compose_board(m, effect);
     interactive_clear();
     printf(BOARD_SIGNATURE PLAYER_SIGNATURE, m->result_buffer,
@@ -354,15 +365,24 @@ static void interactive_finish(struct interactive_model *m) {
     if (ISNULL(m)) {
         return;
     }
-    char *board = gamma_board(m->game);
     interactive_clear();
-    printf("%s", m->board_buffer);
+    m->board_buffer = gamma_board(m->game);
+    interactive_compose_board(m, NULL);
+    printf("%s", m->result_buffer);
     uint32_t players = gamma_players(m->game);
-    for (uint32_t p = 1; p <= players; ++p) {
-        printf("PLAYER %*.1d %"PRIu64"\n", m->player_len, p,
+    uint64_t max_result = 0;
+    for (uint32_t p = 0; p++ < players;) {
+        max_result = max_result < gamma_busy_fields(m->game, p)
+                     ? gamma_busy_fields(m->game, p)
+                     : max_result;
+    }
+    for (uint32_t p = 0; p++ < players;) {
+        if (gamma_busy_fields(m->game, p) == max_result) {
+            printf(YELLOW_COLOR_TEXT);
+        }
+        printf("PLAYER %*.1d %"PRIu64 DISABLE_EFFECTS "\n", m->player_len, p,
                gamma_busy_fields(m->game, p));
     }
-    free(board);
     exit(EXIT_SUCCESS);
 }
 
