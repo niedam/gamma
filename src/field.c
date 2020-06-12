@@ -55,7 +55,7 @@ static void field_init(field_t *fields, uint32_t x, uint32_t y,
     field_t *f = &fields[(uint64_t) max_x * y + x];
     f->visited = false;
     f->owner = 0;
-    f->area = (struct area){ .prev = &f->area, .next = &f->area,
+    f->area = (struct area) { .prev = &f->area, .next = &f->area,
                               .repr = &f->area, .size = 1};
     for (uint32_t i = 0; i < ADJOINING_FIELDS; ++i) {
         f->adjoining[i] = NULL;

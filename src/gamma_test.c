@@ -13,7 +13,6 @@
 /* Ten plik włączamy na początku. */
 #include "gamma.h"
 
-
 /* CMake w wersji release wyłącza asercje. */
 #ifdef NDEBUG
 #undef NDEBUG
@@ -24,7 +23,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-
 
 /** KONFIGUARACJA TESTÓW **/
 
