@@ -155,6 +155,11 @@
 #define LEFT_KEY 'D'
 
 
+/** Kod kombinacji Ctrl+D.
+ */
+#define CTRL_D 4
+
+
 /** @brief Makro ustawia parametry w taki sposób, żeby były zgodne z
  * @ref PLAYER_SIGNATURE.
  * @param[in] player_id         – identyfikator gracza,
@@ -454,7 +459,7 @@ static void interactive_regular_key(struct interactive_model *m, int c) {
         return;
     }
     switch (c) {
-        case 4:
+        case CTRL_D:
             interactive_finish(m);
             break;
         case (int) 'G':
