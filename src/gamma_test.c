@@ -1,9 +1,9 @@
 /** @file
  * Przykładowe użycie silnika gry gamma.
  *
- * @author Marcin Peczarski <marpe@mimuw.edu.pl>
+ * @author Marcin Peczarski <marpe@mimuw.edu.pl>, Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
  * @copyright Uniwersytet Warszawski
- * @date 18.03.2020
+ * @date 12.06.2020
  */
 #include <stdarg.h>
 #include <stddef.h>

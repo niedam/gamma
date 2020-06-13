@@ -4,6 +4,7 @@
  * @author Adam Rozenek <adam.rozenek@students.mimuw.edu.pl>
  * @date 12.06.2020
  */
+
 #include <stdlib.h>
 #include "gamma.h"
 #include "input_interface.h"
