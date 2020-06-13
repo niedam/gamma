@@ -130,9 +130,9 @@
  */
 #define PLAYER_SIGNATURE \
 ">>> PLAYER %*.d\n" \
-" | Busy: %*.1"PRIu64"\n" \
-" | Free: %*.1"PRIu64"\n" \
-" | Golden move: %s\n"
+"| Busy: %*.1"PRIu64"\n" \
+"| Free: %*.1"PRIu64"\n" \
+"| Golden move: %s\n"
 
 
 /** Kod klawisza: strzałka w górę.
@@ -385,7 +385,7 @@ static void interactive_finish(struct interactive_model *m) {
         if (gamma_busy_fields(m->game, p) == max_result) {
             printf(YELLOW_COLOR_TEXT);
         }
-        printf("PLAYER %*.1d %"PRIu64 DISABLE_EFFECTS "\n", m->player_len, p,
+        printf("PLAYER %*.1d - %"PRIu64 " POINTS" DISABLE_EFFECTS "\n", m->player_len, p,
                gamma_busy_fields(m->game, p));
     }
     exit(EXIT_SUCCESS);
