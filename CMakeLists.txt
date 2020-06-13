@@ -52,10 +52,13 @@ if (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 
+# Dodajemy plik z testami silnika gry.
+add_executable(test EXCLUDE_FROM_ALL src/gamma_test.c ${SOURCE_FILES})
+set_target_properties(test PROPERTIES OUTPUT_NAME gamma_test)
+
+
 # Dodajemy obsługę testów jednostkowych z użyciem biblioteki CMocka.
 find_library(CMOCKA cmocka)
 if (CMOCKA)
-    add_executable(test EXCLUDE_FROM_ALL src/gamma_test.c ${SOURCE_FILES})
-    set_target_properties(test PROPERTIES OUTPUT_NAME gamma_test)
     target_link_libraries(test ${CMOCKA})
 endif (CMOCKA)
